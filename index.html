@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOMOE 2.0 — Early Inflation Detection System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-inner">
+        <div class="brand-logo">&#9667;</div>
+        <div class="brand-text">
+          <strong>TOMOE 2.0</strong>
+          <span>Inflation Detection</span>
+        </div>
+      </div>
+      <button class="collapse-btn">&#171;</button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Main Menu</div>
+      <div class="nav-item" data-view="view-dashboard"><span class="nav-icon">&#9672;</span><span>Dashboard</span></div>
+      <div class="nav-item" data-view="view-analytics"><span class="nav-icon">&#128202;</span><span>Analytics</span><span class="nav-badge">20</span></div>
+      <div class="nav-item" data-view="view-early-warning"><span class="nav-icon">&#9889;</span><span>Early Warning</span><span class="nav-badge red">3</span></div>
+      <div class="nav-item" data-view="view-laporan"><span class="nav-icon">&#128203;</span><span>Laporan</span></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-label">Features</div>
+      <div class="nav-item" data-view="view-forecasting"><span class="nav-icon">&#9650;</span><span>Forecasting</span><span class="nav-badge">16</span></div>
+      <div class="nav-item" data-view="view-komoditas"><span class="nav-icon">&#9680;</span><span>Komoditas</span></div>
+      <div class="nav-item" data-view="view-sentimen"><span class="nav-icon">&#9681;</span><span>Sentimen</span></div>
+      <div class="nav-item" data-view="view-geospatial"><span class="nav-icon">&#8853;</span><span>Geospatial</span></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-label">General</div>
+      <div class="nav-item" data-view="view-pengaturan"><span class="nav-icon">&#9881;</span><span>Pengaturan</span></div>
+      <div class="nav-item" data-view="view-bantuan"><span class="nav-icon">?</span><span>Bantuan</span></div>
+      <div class="nav-item" data-view="view-keluar"><span class="nav-icon">&#8594;</span><span>Keluar</span></div>
+    </div>
+
+    <div class="sidebar-upgrade">
+      <p>&#127942; PIDI Digdaya X 2026<br>Bank Indonesia x OJK</p>
+      <button class="upgrade-btn">PS2 &mdash; Inflasi &amp; Pangan</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input class="search-input" type="text" placeholder="Cari komoditas, wilayah...">
+        <span class="search-kbd">&#8984;K</span>
+      </div>
+      <div class="topbar-right">
+        <div class="live-chip"><div class="live-dot"></div><span id="live-clock">&mdash;</span></div>
+        <div class="icon-btn">?</div>
+        <div class="icon-btn">&#9993;</div>
+        <div class="icon-btn">&#128276;<div class="notif-dot"></div></div>
+        <div class="user-avatar">BI</div>
+      </div>
+    </div>
+
+    <!-- PAGE -->
+    <div class="page">
+
+      <!-- ═══════════ PAGE HEADER (shared, updates via JS) ═══════════ -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title-h">Selamat Datang, Tim TOMOE &#128075;</h1>
+          <p class="page-title-p">Monitor dan kendalikan pergerakan harga komoditas secara real-time.</p>
+        </div>
+        <div class="header-actions">
+          <div class="date-chip">&#128197; <span id="date-display">&mdash;</span></div>
+          <button class="btn-primary">&#8679; Export</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: DASHBOARD
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-dashboard" class="view">
+
+        <!-- Alert -->
+        <div class="alert-strip">
+          <div class="alert-icon-wrap">&#9888;&#65039;</div>
+          <div class="alert-content">
+            <h4>&#9667; Early Warning Aktif &mdash; Level KRITIS</h4>
+            <p>Proyeksi <strong>Cabai Rawit Jawa Timur</strong> &amp; <strong>Sulawesi Selatan</strong> melampaui threshold +5% MtM dalam 14 hari. Sentimen negatif +62% vs minggu lalu.</p>
+          </div>
+          <div class="alert-right">
+            <span class="alert-time">Diperbarui 09:42 WIB</span>
+            <button class="btn-alert">Lihat Detail</button>
+          </div>
+        </div>
+
+        <!-- KPI -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-green">&#128200;</div><div class="kpi-dots">&#8943;</div></div>
+            <div class="kpi-label">Inflasi YoY Nasional</div>
+            <div class="kpi-value">3.12<span class="unit">%</span></div>
+            <div class="kpi-change"><span class="change-badge badge-up">&#9650; +0.18%</span> dari bulan lalu</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-red">&#128293;</div><div class="kpi-dots">&#8943;</div></div>
+            <div class="kpi-label">Inflasi MtM Bulan Ini</div>
+            <div class="kpi-value" style="color:var(--red-600)">0.54<span class="unit">%</span></div>
+            <div class="kpi-change"><span class="change-badge badge-up">&#9650; +0.21%</span> tren naik 3 hari</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-blue">&#128197;</div><div class="kpi-dots">&#8943;</div></div>
+            <div class="kpi-label">Inflasi YtD 2026</div>
+            <div class="kpi-value">0.87<span class="unit">%</span></div>
+            <div class="kpi-change"><span class="change-badge badge-ok">&#8776; Sesuai Target</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-red">&#127919;</div><div class="kpi-dots">&#8943;</div></div>
+            <div class="kpi-label">Inflation Risk Score</div>
+            <div class="kpi-value" style="color:var(--red-600)">72<span class="unit">/100</span></div>
+            <div class="kpi-change"><span class="change-badge badge-up">TINGGI</span> +8 poin / 24 jam</div>
+          </div>
+        </div>
+
+        <!-- Forecast + Warning -->
+        <div class="row-2-6">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="card-icon kpi-icon-blue">&#128200;</div>Forecasting Nasional &mdash; YoY</div>
+              <div class="chart-tabs"><div class="chart-tab active">7H</div><div class="chart-tab">14H</div><div class="chart-tab">30H</div></div>
+            </div>
+            <div class="card-body">
+              <div class="forecast-legend">
+                <div class="leg-item"><div class="leg-line" style="background:var(--green-600)"></div><span>Aktual</span></div>
+                <div class="leg-item"><div class="leg-line" style="background:var(--red-500)"></div><span>Forecast</span></div>
+                <div class="leg-item"><div class="leg-line" style="background:rgba(239,68,68,0.25);height:8px;border-radius:2px;"></div><span>CI</span></div>
+                <div class="leg-item" style="margin-left:auto"><div class="leg-line" style="background:rgba(239,68,68,0.5)"></div><span style="color:var(--red-500)">Threshold</span></div>
+              </div>
+              <div class="chart-wrap"><canvas id="dashForecastChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="card-icon" style="background:var(--red-100)">&#9888;&#65039;</div>5 Risiko Tertinggi</div>
+              <div style="font-size:11px;color:var(--text-3);font-family:var(--mono);">&#8805;2.5% / 14 hari</div>
+            </div>
+            <div class="card-body">
+              <div class="warning-list">
+                <div class="w-item"><div class="w-bar bar-high"></div><div class="w-rank">01</div><div class="w-info"><div class="w-region">Jawa Timur</div><div class="w-commodity">Cabai Rawit &middot; Bawang Merah</div></div><div class="w-score"><div class="w-num sev-high">87</div><div class="w-pct sev-high">&#9650; +12.4%</div></div></div>
+                <div class="w-item"><div class="w-bar bar-high"></div><div class="w-rank">02</div><div class="w-info"><div class="w-region">Sulawesi Selatan</div><div class="w-commodity">Cabai Rawit &middot; Beras IR64</div></div><div class="w-score"><div class="w-num sev-high">81</div><div class="w-pct sev-high">&#9650; +9.7%</div></div></div>
+                <div class="w-item"><div class="w-bar bar-med"></div><div class="w-rank">03</div><div class="w-info"><div class="w-region">DKI Jakarta</div><div class="w-commodity">Minyak Goreng &middot; Daging Sapi</div></div><div class="w-score"><div class="w-num sev-med">74</div><div class="w-pct sev-med">&#9650; +6.2%</div></div></div>
+                <div class="w-item"><div class="w-bar bar-med"></div><div class="w-rank">04</div><div class="w-info"><div class="w-region">Kalimantan Timur</div><div class="w-commodity">Beras &middot; Telur Ayam</div></div><div class="w-score"><div class="w-num sev-med">68</div><div class="w-pct sev-med">&#9650; +5.8%</div></div></div>
+                <div class="w-item"><div class="w-bar bar-low"></div><div class="w-rank">05</div><div class="w-info"><div class="w-region">Nusa Tenggara Timur</div><div class="w-commodity">Beras &middot; Gula Pasir</div></div><div class="w-score"><div class="w-num sev-low">52</div><div class="w-pct sev-low">&#9660; &minus;1.2%</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Komoditas + Sentimen + Isu -->
+        <div class="row-3">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#127807;</div>Komoditas Utama</div><span class="card-action">Lihat Semua &rarr;</span></div>
+            <div class="card-body" style="padding:12px 0 0">
+              <table class="ctable">
+                <thead><tr><th>Komoditas</th><th class="r">Harga</th><th class="r">MtM</th><th class="r">YoY</th><th class="r">Trend</th></tr></thead>
+                <tbody>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#127807;</div>Beras IR64</div></td><td class="mono">14.800</td><td class="mono c-up">+2.8%</td><td class="mono c-up">+8.1%</td><td><div class="mini-progress"><div class="mini-fill" style="width:70%;background:var(--red-400)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#127798;</div>Cabai Rawit</div></td><td class="mono">68.200</td><td class="mono c-up">+12.4%</td><td class="mono c-up">+24.3%</td><td><div class="mini-progress"><div class="mini-fill" style="width:96%;background:var(--red-600)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#128704;</div>Minyak Goreng</div></td><td class="mono">18.500</td><td class="mono c-up">+1.9%</td><td class="mono c-up">+5.4%</td><td><div class="mini-progress"><div class="mini-fill" style="width:40%;background:var(--amber-600)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#129370;</div>Telur Ayam</div></td><td class="mono">29.400</td><td class="mono c-down">&minus;0.7%</td><td class="mono c-up">+3.2%</td><td><div class="mini-progress"><div class="mini-fill" style="width:18%;background:var(--green-500)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#129381;</div>Bawang Merah</div></td><td class="mono">42.000</td><td class="mono c-up">+7.1%</td><td class="mono c-up">+18.7%</td><td><div class="mini-progress"><div class="mini-fill" style="width:80%;background:var(--red-500)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#129385;</div>Daging Sapi</div></td><td class="mono">138.000</td><td class="mono c-up">+3.4%</td><td class="mono c-up">+9.8%</td><td><div class="mini-progress"><div class="mini-fill" style="width:55%;background:var(--amber-600)"></div></div></td></tr>
+                  <tr><td><div class="com-name"><div class="com-emoji">&#127852;</div>Gula Pasir</div></td><td class="mono">16.200</td><td class="mono c-down">&minus;0.3%</td><td class="mono c-up">+2.1%</td><td><div class="mini-progress"><div class="mini-fill" style="width:14%;background:var(--green-500)"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-green">&#128172;</div>Opinion Intelligence</div><span style="font-size:10.5px;color:var(--text-3);">IndoBERT &middot; BERTopic</span></div>
+            <div class="card-body">
+              <canvas id="dashSentimentChart" height="150"></canvas>
+              <div class="sentiment-grid">
+                <div class="sent-item"><div class="sent-name">Cabai &#127798;<span class="sent-pct" style="color:var(--red-600)">78%</span></div><div class="sent-track"><div class="sent-fill" style="width:78%;background:linear-gradient(90deg,var(--red-500),var(--red-400))"></div></div><div class="sent-labels"><span style="color:var(--red-600);font-weight:600">Negatif</span><span>22% positif</span></div></div>
+                <div class="sent-item"><div class="sent-name">Beras &#127807;<span class="sent-pct" style="color:var(--amber-600)">55%</span></div><div class="sent-track"><div class="sent-fill" style="width:55%;background:linear-gradient(90deg,var(--amber-600),#fbbf24)"></div></div><div class="sent-labels"><span style="color:var(--amber-600);font-weight:600">Negatif</span><span>45% positif</span></div></div>
+                <div class="sent-item"><div class="sent-name">Minyak &#128704;<span class="sent-pct" style="color:var(--amber-600)">40%</span></div><div class="sent-track"><div class="sent-fill" style="width:40%;background:linear-gradient(90deg,var(--amber-600),#fbbf24)"></div></div><div class="sent-labels"><span style="color:var(--amber-600);font-weight:600">Negatif</span><span>60% positif</span></div></div>
+                <div class="sent-item"><div class="sent-name">Telur &#129370;<span class="sent-pct" style="color:var(--green-600)">22%</span></div><div class="sent-track"><div class="sent-fill" style="width:22%;background:linear-gradient(90deg,var(--green-600),var(--green-400))"></div></div><div class="sent-labels"><span style="color:var(--green-600);font-weight:600">Negatif</span><span>78% positif</span></div></div>
+              </div>
+              <div class="spike-box"><div><p>Volume Diskusi Hari Ini</p><strong>24.800 mention</strong></div><span class="change-badge badge-up">&#9650; +62%</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#128240;</div>Isu Strategis &mdash; Trending</div><span class="card-action">Filter &#8862;</span></div>
+            <div class="card-body">
+              <div class="issue-list">
+                <div class="issue-card"><div class="issue-top"><span class="itag itag-volatile">Volatil</span><span class="isource">X &middot; Berita</span></div><div class="ititle">Harga cabai rawit di pasar Surabaya naik 2x lipat dalam sepekan</div><div class="ivol">&#8593; 4.820 mention <span class="ivol-spike">&#9679; SPIKE</span></div></div>
+                <div class="issue-card"><div class="issue-top"><span class="itag itag-supply">Supply</span><span class="isource">Berita &middot; BI</span></div><div class="ititle">Gagal panen bawang merah di NTB akibat curah hujan tinggi</div><div class="ivol">&#8593; 3.210 mention <span class="ivol-spike">&#9679; SPIKE</span></div></div>
+                <div class="issue-card"><div class="issue-top"><span class="itag itag-demand">Demand</span><span class="isource">X &middot; Instagram</span></div><div class="ititle">Antisipasi Ramadan picu panic buying bahan pokok di kota besar</div><div class="ivol">&#8593; 2.890 mention</div></div>
+                <div class="issue-card"><div class="issue-top"><span class="itag itag-policy">Kebijakan</span><span class="isource">Kemendag &middot; BI</span></div><div class="ititle">Operasi pasar beras dijadwalkan TPID Jawa Timur pekan ini</div><div class="ivol">&#8593; 1.450 mention</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Score + Geo -->
+        <div class="row-2-4">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-red">&#127919;</div>Inflation Risk Score</div><span class="status-chip chip-red">&#9679; KRITIS</span></div>
+            <div class="card-body">
+              <div class="risk-bars">
+                <div><div class="risk-label-row"><span class="risk-label">Price Momentum <span class="risk-weight">(40%)</span></span><span class="risk-val" style="color:var(--red-600)">31/40</span></div><div class="risk-track"><div class="risk-fill" style="width:77.5%;background:linear-gradient(90deg,var(--red-600),var(--red-400))"></div></div></div>
+                <div><div class="risk-label-row"><span class="risk-label">Forecast Delta <span class="risk-weight">(30%)</span></span><span class="risk-val" style="color:var(--amber-600)">22/30</span></div><div class="risk-track"><div class="risk-fill" style="width:73.3%;background:linear-gradient(90deg,var(--amber-600),#fbbf24)"></div></div></div>
+                <div><div class="risk-label-row"><span class="risk-label">Sentiment Accel. <span class="risk-weight">(20%)</span></span><span class="risk-val" style="color:var(--red-600)">16/20</span></div><div class="risk-track"><div class="risk-fill" style="width:80%;background:linear-gradient(90deg,#e11d48,var(--red-400))"></div></div></div>
+                <div><div class="risk-label-row"><span class="risk-label">Volatility Spike <span class="risk-weight">(10%)</span></span><span class="risk-val" style="color:var(--amber-600)">7/10</span></div><div class="risk-track"><div class="risk-fill" style="width:70%;background:linear-gradient(90deg,var(--amber-600),#fbbf24)"></div></div></div>
+              </div>
+              <div class="risk-total-card">
+                <div><div style="font-size:10.5px;font-weight:600;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Total Risk Score</div><div class="risk-total-num">72 <span style="font-size:16px;color:var(--text-3);font-family:var(--mono)">/100</span></div><div class="risk-total-sub">SARIMA + LSTM &middot; IndoBERT</div></div>
+                <div style="text-align:right"><div class="status-chip chip-red" style="margin-bottom:6px">&#9889; Intervensi</div><div style="font-size:10px;color:var(--text-3)">2 menit lalu</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="card-icon kpi-icon-blue">&#128506;&#65039;</div>Peta Risiko &mdash; Geospatial</div>
+              <div style="display:flex;gap:6px"><span class="chart-tab active" style="font-size:10px">MtM</span><span class="chart-tab" style="font-size:10px">YoY</span><span class="chart-tab" style="font-size:10px">YtD</span></div>
+            </div>
+            <div class="card-body">
+              <svg viewBox="0 0 520 170" class="map-svg" xmlns="http://www.w3.org/2000/svg">
+                <defs><filter id="glow2"><feGaussianBlur stdDeviation="2.5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs>
+                <path class="map-region warm" d="M 20,80 L 30,40 L 60,28 L 82,44 L 90,70 L 74,102 L 48,112 Z"/>
+                <text x="54" y="73" fill="#92400e" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Sumatera</text>
+                <path class="map-region hot" d="M 108,102 L 150,90 L 222,96 L 242,107 L 210,122 L 158,118 L 118,114 Z"/>
+                <text x="176" y="109" fill="#991b1b" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Jawa &#9888;</text>
+                <path class="map-region cool" d="M 158,38 L 220,23 L 272,28 L 282,66 L 266,90 L 220,88 L 163,75 Z"/>
+                <text x="222" y="60" fill="#1e40af" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Kalimantan</text>
+                <path class="map-region hot" d="M 290,48 L 312,32 L 327,44 L 332,72 L 316,92 L 294,86 L 284,70 Z"/>
+                <text x="308" y="64" fill="#991b1b" font-size="7" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Sulawesi</text>
+                <ellipse class="map-region cool" cx="372" cy="74" rx="26" ry="30"/>
+                <text x="372" y="78" fill="#1e40af" font-size="7" font-family="Plus Jakarta Sans" font-weight="600" text-anchor="middle">Maluku</text>
+                <path class="map-region cool" d="M 402,48 L 504,44 L 512,102 L 480,122 L 420,112 L 402,86 Z"/>
+                <text x="456" y="86" fill="#1e40af" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Papua</text>
+                <ellipse class="map-region warm" cx="264" cy="128" rx="30" ry="14"/>
+                <text x="264" y="132" fill="#92400e" font-size="7" font-family="Plus Jakarta Sans" font-weight="600" text-anchor="middle">NTB/NTT</text>
+                <ellipse class="map-region warm" cx="244" cy="120" rx="9" ry="6"/>
+                <circle cx="176" cy="102" r="5" fill="#ef4444" opacity="0.9" filter="url(#glow2)"><animate attributeName="r" values="5;9;5" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite"/></circle>
+                <circle cx="310" cy="64" r="4" fill="#ef4444" opacity="0.9" filter="url(#glow2)"><animate attributeName="r" values="4;7;4" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.2s" repeatCount="indefinite"/></circle>
+              </svg>
+              <div class="map-legend">
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(239,68,68,0.4);border:1px solid #f87171"></div>Kritis &#8805;5%</div>
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(217,119,6,0.3);border:1px solid #d97706"></div>Waspada 2&ndash;5%</div>
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(37,99,235,0.15);border:1px solid #2563eb"></div>Normal &#8804;2%</div>
+                <div class="map-leg-item" style="margin-left:auto"><span style="color:var(--red-500);font-size:13px">&#9679;</span> Alert Aktif</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-dashboard -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: ANALYTICS
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-analytics" class="view">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-card-title">Rata-rata YoY 2026</div><div class="stat-big" style="color:var(--red-600)">3.12%</div><div class="stat-sub">&#9650; Naik 0.18% dari bulan lalu</div></div>
+          <div class="stat-card"><div class="stat-card-title">Komoditas Paling Volatil</div><div class="stat-big" style="color:var(--amber-600)">Cabai</div><div class="stat-sub">+24.3% YoY &mdash; Andil 0.54%</div></div>
+          <div class="stat-card"><div class="stat-card-title">Wilayah Risiko Tertinggi</div><div class="stat-big" style="color:var(--red-600)">Jatim</div><div class="stat-sub">Risk Score 87/100</div></div>
+        </div>
+        <div class="row-2eq">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-green">&#128200;</div>Tren Inflasi YoY (2024&ndash;2026)</div></div>
+            <div class="card-body"><div style="height:220px"><canvas id="anaYoYChart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-red">&#128202;</div>Andil Inflasi MtM per Komoditas</div></div>
+            <div class="card-body"><div style="height:220px"><canvas id="anaKomoditasChart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#128203;</div>Rincian Inflasi per Kelompok Komoditas</div><span class="card-action">Unduh CSV</span></div>
+          <div class="card-body" style="padding:12px 0 0">
+            <table class="ctable">
+              <thead><tr><th>Kelompok</th><th class="r">MtM</th><th class="r">YoY</th><th class="r">YtD</th><th class="r">Andil MtM</th></tr></thead>
+              <tbody>
+                <tr><td>Makanan, Minuman &amp; Tembakau</td><td class="mono c-up">+0.87%</td><td class="mono c-up">+4.21%</td><td class="mono c-up">+0.95%</td><td class="mono c-up">+0.28%</td></tr>
+                <tr><td>Perumahan, Air &amp; Listrik</td><td class="mono c-up">+0.42%</td><td class="mono c-up">+2.10%</td><td class="mono c-up">+0.44%</td><td class="mono c-up">+0.11%</td></tr>
+                <tr><td>Transportasi</td><td class="mono c-down">&minus;0.12%</td><td class="mono c-up">+1.85%</td><td class="mono c-down">&minus;0.08%</td><td class="mono c-down">&minus;0.02%</td></tr>
+                <tr><td>Kesehatan</td><td class="mono c-up">+0.31%</td><td class="mono c-up">+3.42%</td><td class="mono c-up">+0.33%</td><td class="mono c-up">+0.03%</td></tr>
+                <tr><td>Pendidikan</td><td class="mono">0.00%</td><td class="mono c-up">+1.20%</td><td class="mono">0.00%</td><td class="mono">0.00%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-analytics -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: EARLY WARNING
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-early-warning" class="view">
+        <div class="alert-strip">
+          <div class="alert-icon-wrap">&#9888;&#65039;</div>
+          <div class="alert-content"><h4>3 Alert Aktif &mdash; Perlu Tindakan Segera</h4><p>Jawa Timur dan Sulawesi Selatan dalam status KRITIS. Threshold MtM 2.5% terlampaui untuk komoditas cabai dan bawang merah.</p></div>
+          <div class="alert-right"><button class="btn-primary">Kirim Notifikasi TPID</button></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-red">&#128200;</div>Proyeksi Harga Cabai Rawit &mdash; 14 Hari ke Depan</div>
+            <div class="chart-tabs"><div class="chart-tab active">Cabai</div><div class="chart-tab">Bawang</div><div class="chart-tab">Beras</div></div>
+          </div>
+          <div class="card-body"><div style="height:240px"><canvas id="ewTimelineChart"></canvas></div></div>
+        </div>
+        <div class="ew-grid">
+          <div class="ew-card critical">
+            <div class="ew-card-header"><div><div class="ew-region">Jawa Timur</div><div class="ew-province">Provinsi &mdash; Jawa</div></div><div class="ew-score-wrap"><div class="ew-score sev-high">87</div><div class="ew-label" style="color:var(--red-600)">KRITIS</div></div></div>
+            <div class="ew-commodities"><span class="ew-commodity-tag">Cabai Rawit</span><span class="ew-commodity-tag">Bawang Merah</span></div>
+            <div class="ew-pct sev-high">&#9650; +12.4% proyeksi MtM 14H</div>
+          </div>
+          <div class="ew-card critical">
+            <div class="ew-card-header"><div><div class="ew-region">Sulawesi Selatan</div><div class="ew-province">Provinsi &mdash; Sulawesi</div></div><div class="ew-score-wrap"><div class="ew-score sev-high">81</div><div class="ew-label" style="color:var(--red-600)">KRITIS</div></div></div>
+            <div class="ew-commodities"><span class="ew-commodity-tag">Cabai Rawit</span><span class="ew-commodity-tag">Beras IR64</span></div>
+            <div class="ew-pct sev-high">&#9650; +9.7% proyeksi MtM 14H</div>
+          </div>
+          <div class="ew-card warning">
+            <div class="ew-card-header"><div><div class="ew-region">DKI Jakarta</div><div class="ew-province">Provinsi &mdash; Jawa</div></div><div class="ew-score-wrap"><div class="ew-score sev-med">74</div><div class="ew-label" style="color:var(--amber-600)">WASPADA</div></div></div>
+            <div class="ew-commodities"><span class="ew-commodity-tag">Minyak Goreng</span><span class="ew-commodity-tag">Daging Sapi</span></div>
+            <div class="ew-pct sev-med">&#9650; +6.2% proyeksi MtM 14H</div>
+          </div>
+          <div class="ew-card warning">
+            <div class="ew-card-header"><div><div class="ew-region">Kalimantan Timur</div><div class="ew-province">Provinsi &mdash; Kalimantan</div></div><div class="ew-score-wrap"><div class="ew-score sev-med">68</div><div class="ew-label" style="color:var(--amber-600)">WASPADA</div></div></div>
+            <div class="ew-commodities"><span class="ew-commodity-tag">Beras</span><span class="ew-commodity-tag">Telur Ayam</span></div>
+            <div class="ew-pct sev-med">&#9650; +5.8% proyeksi MtM 14H</div>
+          </div>
+        </div>
+      </div><!-- /view-early-warning -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: LAPORAN
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-laporan" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-blue">&#128203;</div>Laporan Tersedia</div><button class="btn-primary">&#8679; Buat Laporan Baru</button></div>
+          <div class="card-body" style="padding:12px 0 0">
+            <table class="ctable">
+              <thead><tr><th>Judul Laporan</th><th>Periode</th><th>Tipe</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Laporan Inflasi Mingguan &mdash; W12 2026</td><td class="mono" style="font-size:11px">17&ndash;23 Mar 2026</td><td><span class="itag itag-policy">Mingguan</span></td><td><span class="status-chip chip-green" style="padding:2px 8px;font-size:10px">&#10003; Selesai</span></td><td><span class="card-action">Unduh</span></td></tr>
+                <tr><td style="font-weight:600">Analisis Early Warning &mdash; Cabai Mar 2026</td><td class="mono" style="font-size:11px">1&ndash;25 Mar 2026</td><td><span class="itag itag-volatile">Alert</span></td><td><span class="status-chip chip-green" style="padding:2px 8px;font-size:10px">&#10003; Selesai</span></td><td><span class="card-action">Unduh</span></td></tr>
+                <tr><td style="font-weight:600">Laporan Inflasi Bulanan &mdash; Feb 2026</td><td class="mono" style="font-size:11px">Feb 2026</td><td><span class="itag itag-supply">Bulanan</span></td><td><span class="status-chip chip-green" style="padding:2px 8px;font-size:10px">&#10003; Selesai</span></td><td><span class="card-action">Unduh</span></td></tr>
+                <tr><td style="font-weight:600">Laporan Sentimen Publik &mdash; Feb 2026</td><td class="mono" style="font-size:11px">Feb 2026</td><td><span class="itag itag-demand">Sentimen</span></td><td><span class="status-chip chip-amber" style="padding:2px 8px;font-size:10px">&#9679; Proses</span></td><td><span class="card-action" style="color:var(--text-3)">Menunggu...</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-laporan -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: FORECASTING
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-forecasting" class="view">
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-red">&#127798;</div></div><div class="kpi-label">Cabai Rawit &mdash; 14H</div><div class="kpi-value" style="color:var(--red-600)">85.400<span class="unit">Rp</span></div><div class="kpi-change"><span class="change-badge badge-up">&#9650; +25.3%</span></div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-amber">&#127807;</div></div><div class="kpi-label">Beras IR64 &mdash; 14H</div><div class="kpi-value" style="color:var(--amber-600)">15.320<span class="unit">Rp</span></div><div class="kpi-change"><span class="change-badge badge-up">&#9650; +3.5%</span></div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-blue">&#129381;</div></div><div class="kpi-label">Bawang Merah &mdash; 14H</div><div class="kpi-value" style="color:var(--amber-600)">50.800<span class="unit">Rp</span></div><div class="kpi-change"><span class="change-badge badge-up">&#9650; +21.0%</span></div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-green">&#129370;</div></div><div class="kpi-label">Telur Ayam &mdash; 14H</div><div class="kpi-value" style="color:var(--green-700)">28.900<span class="unit">Rp</span></div><div class="kpi-change"><span class="change-badge badge-down">&#9660; &minus;1.7%</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="card-icon kpi-icon-blue">&#128200;</div>Proyeksi Harga &mdash; 17 Hari</div>
+            <div class="chart-tabs"><div class="chart-tab active">7H</div><div class="chart-tab">14H</div><div class="chart-tab">30H</div></div>
+          </div>
+          <div class="card-body">
+            <div class="commodity-selector">
+              <div class="com-pill active">&#127807; Beras IR64</div>
+              <div class="com-pill">&#127798; Cabai Rawit</div>
+              <div class="com-pill">&#128704; Minyak Goreng</div>
+              <div class="com-pill">&#129370; Telur Ayam</div>
+              <div class="com-pill">&#129381; Bawang Merah</div>
+              <div class="com-pill">&#129385; Daging Sapi</div>
+            </div>
+            <div class="forecast-legend">
+              <div class="leg-item"><div class="leg-line" style="background:var(--green-600)"></div><span>Aktual</span></div>
+              <div class="leg-item"><div class="leg-line" style="background:var(--red-500)"></div><span>Forecast</span></div>
+              <div class="leg-item"><div class="leg-line" style="background:rgba(239,68,68,0.25);height:8px;border-radius:2px;"></div><span>Confidence Interval</span></div>
+            </div>
+            <div class="forecast-big-chart"><canvas id="fcMainChart"></canvas></div>
+          </div>
+        </div>
+      </div><!-- /view-forecasting -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: KOMODITAS
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-komoditas" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#127807;</div>Data Harga Komoditas &mdash; Harian</div><div style="display:flex;gap:8px"><button class="btn-secondary">Filter Wilayah</button><button class="btn-primary">&#8679; Export</button></div></div>
+          <div class="card-body" style="padding:12px 0 0">
+            <table class="ctable">
+              <thead><tr><th>Komoditas</th><th class="r">Harga (Rp/kg)</th><th class="r">MtM</th><th class="r">YoY</th><th class="r">YtD</th><th class="r">7H Lalu</th><th class="r">Trend</th></tr></thead>
+              <tbody>
+                <tr><td><div class="com-name"><div class="com-emoji">&#127807;</div>Beras IR64</div></td><td class="mono">14.800</td><td class="mono c-up">+2.8%</td><td class="mono c-up">+8.1%</td><td class="mono c-up">+3.2%</td><td class="mono">14.400</td><td><div class="mini-progress"><div class="mini-fill" style="width:70%;background:var(--red-400)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#127798;</div>Cabai Rawit</div></td><td class="mono">68.200</td><td class="mono c-up">+12.4%</td><td class="mono c-up">+24.3%</td><td class="mono c-up">+18.5%</td><td class="mono">60.700</td><td><div class="mini-progress"><div class="mini-fill" style="width:96%;background:var(--red-600)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#128704;</div>Minyak Goreng</div></td><td class="mono">18.500</td><td class="mono c-up">+1.9%</td><td class="mono c-up">+5.4%</td><td class="mono c-up">+2.1%</td><td class="mono">18.150</td><td><div class="mini-progress"><div class="mini-fill" style="width:40%;background:var(--amber-600)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#129370;</div>Telur Ayam</div></td><td class="mono">29.400</td><td class="mono c-down">&minus;0.7%</td><td class="mono c-up">+3.2%</td><td class="mono c-down">&minus;0.5%</td><td class="mono">29.600</td><td><div class="mini-progress"><div class="mini-fill" style="width:18%;background:var(--green-500)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#129381;</div>Bawang Merah</div></td><td class="mono">42.000</td><td class="mono c-up">+7.1%</td><td class="mono c-up">+18.7%</td><td class="mono c-up">+9.2%</td><td class="mono">39.200</td><td><div class="mini-progress"><div class="mini-fill" style="width:80%;background:var(--red-500)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#129385;</div>Daging Sapi</div></td><td class="mono">138.000</td><td class="mono c-up">+3.4%</td><td class="mono c-up">+9.8%</td><td class="mono c-up">+4.1%</td><td class="mono">133.500</td><td><div class="mini-progress"><div class="mini-fill" style="width:55%;background:var(--amber-600)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#127852;</div>Gula Pasir</div></td><td class="mono">16.200</td><td class="mono c-down">&minus;0.3%</td><td class="mono c-up">+2.1%</td><td class="mono c-up">+0.4%</td><td class="mono">16.250</td><td><div class="mini-progress"><div class="mini-fill" style="width:14%;background:var(--green-500)"></div></div></td></tr>
+                <tr><td><div class="com-name"><div class="com-emoji">&#129367;</div>Bawang Putih</div></td><td class="mono">36.500</td><td class="mono c-up">+4.3%</td><td class="mono c-up">+12.5%</td><td class="mono c-up">+6.1%</td><td class="mono">35.000</td><td><div class="mini-progress"><div class="mini-fill" style="width:62%;background:var(--amber-600)"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-komoditas -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: SENTIMEN
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-sentimen" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-green">&#128200;</div>Tren Sentimen Publik &mdash; 30 Hari Terakhir</div><span style="font-size:10.5px;color:var(--text-3)">IndoBERT &middot; BERTopic</span></div>
+          <div class="card-body"><div style="height:200px"><canvas id="sentTimelineChart"></canvas></div></div>
+        </div>
+        <div class="sentiment-big-grid">
+          <div class="sent-big-card"><div class="sent-big-name">Cabai Rawit &#127798;</div><div class="sent-donut-wrap"><canvas id="sent-cabai"></canvas></div><div class="sent-score-row"><span class="sent-neg">78% Negatif</span><span class="sent-pos">8% Positif</span></div></div>
+          <div class="sent-big-card"><div class="sent-big-name">Beras &#127807;</div><div class="sent-donut-wrap"><canvas id="sent-beras"></canvas></div><div class="sent-score-row"><span class="sent-neg">55% Negatif</span><span class="sent-pos">19% Positif</span></div></div>
+          <div class="sent-big-card"><div class="sent-big-name">Minyak Goreng &#128704;</div><div class="sent-donut-wrap"><canvas id="sent-minyak"></canvas></div><div class="sent-score-row"><span class="sent-neg">40% Negatif</span><span class="sent-pos">25% Positif</span></div></div>
+          <div class="sent-big-card"><div class="sent-big-name">Telur Ayam &#129370;</div><div class="sent-donut-wrap"><canvas id="sent-telur"></canvas></div><div class="sent-score-row"><span class="sent-neg">22% Negatif</span><span class="sent-pos">50% Positif</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#128172;</div>Topik Trending &mdash; BERTopic</div></div>
+          <div class="card-body">
+            <div class="issue-list">
+              <div class="issue-card"><div class="issue-top"><span class="itag itag-volatile">Volatil</span><span class="isource">X &middot; Berita</span></div><div class="ititle">Kenaikan harga cabai rawit di pasar tradisional Surabaya mencapai 2x lipat dalam seminggu</div><div class="ivol">&#8593; 4.820 mention <span class="ivol-spike">&#9679; SPIKE</span></div></div>
+              <div class="issue-card"><div class="issue-top"><span class="itag itag-supply">Supply</span><span class="isource">Berita &middot; BI</span></div><div class="ititle">Gagal panen bawang merah di NTB akibat curah hujan tinggi &mdash; distribusi terganggu</div><div class="ivol">&#8593; 3.210 mention <span class="ivol-spike">&#9679; SPIKE</span></div></div>
+              <div class="issue-card"><div class="issue-top"><span class="itag itag-demand">Demand</span><span class="isource">X &middot; Instagram</span></div><div class="ititle">Antisipasi Ramadan dorong panic buying bahan pokok di berbagai kota besar</div><div class="ivol">&#8593; 2.890 mention</div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-sentimen -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: GEOSPATIAL
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-geospatial" class="view">
+        <div class="row-2eq">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-blue">&#128506;&#65039;</div>Peta Risiko Inflasi Indonesia</div>
+              <div style="display:flex;gap:6px"><span class="chart-tab active" style="font-size:10px">MtM</span><span class="chart-tab" style="font-size:10px">YoY</span><span class="chart-tab" style="font-size:10px">YtD</span></div>
+            </div>
+            <div class="card-body">
+              <svg viewBox="0 0 520 170" style="width:100%;height:200px" xmlns="http://www.w3.org/2000/svg">
+                <defs><filter id="glow3"><feGaussianBlur stdDeviation="2.5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs>
+                <path class="map-region warm" d="M 20,80 L 30,40 L 60,28 L 82,44 L 90,70 L 74,102 L 48,112 Z"/><text x="54" y="73" fill="#92400e" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Sumatera</text>
+                <path class="map-region hot" d="M 108,102 L 150,90 L 222,96 L 242,107 L 210,122 L 158,118 L 118,114 Z"/><text x="176" y="109" fill="#991b1b" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Jawa</text>
+                <path class="map-region cool" d="M 158,38 L 220,23 L 272,28 L 282,66 L 266,90 L 220,88 L 163,75 Z"/><text x="222" y="60" fill="#1e40af" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Kalimantan</text>
+                <path class="map-region hot" d="M 290,48 L 312,32 L 327,44 L 332,72 L 316,92 L 294,86 L 284,70 Z"/><text x="308" y="64" fill="#991b1b" font-size="7" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Sulawesi</text>
+                <ellipse class="map-region cool" cx="372" cy="74" rx="26" ry="30"/><text x="372" y="78" fill="#1e40af" font-size="7" font-family="Plus Jakarta Sans" font-weight="600" text-anchor="middle">Maluku</text>
+                <path class="map-region cool" d="M 402,48 L 504,44 L 512,102 L 480,122 L 420,112 L 402,86 Z"/><text x="456" y="86" fill="#1e40af" font-size="8" font-family="Plus Jakarta Sans" font-weight="700" text-anchor="middle">Papua</text>
+                <ellipse class="map-region warm" cx="264" cy="128" rx="30" ry="14"/><text x="264" y="132" fill="#92400e" font-size="7" font-family="Plus Jakarta Sans" font-weight="600" text-anchor="middle">NTB/NTT</text>
+                <circle cx="176" cy="102" r="5" fill="#ef4444" opacity="0.9" filter="url(#glow3)"><animate attributeName="r" values="5;9;5" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite"/></circle>
+                <circle cx="310" cy="64" r="4" fill="#ef4444" opacity="0.9" filter="url(#glow3)"><animate attributeName="r" values="4;7;4" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.2s" repeatCount="indefinite"/></circle>
+              </svg>
+              <div class="map-legend">
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(239,68,68,0.4);border:1px solid #f87171"></div>Kritis &#8805;5%</div>
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(217,119,6,0.3);border:1px solid #d97706"></div>Waspada 2&ndash;5%</div>
+                <div class="map-leg-item"><div class="map-dot" style="background:rgba(37,99,235,0.15);border:1px solid #2563eb"></div>Normal &#8804;2%</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-red">&#128202;</div>Risk Score per Provinsi</div></div>
+            <div class="card-body"><div style="height:240px"><canvas id="geoBarChart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-amber">&#128203;</div>Tabel Risiko per Provinsi</div><button class="btn-secondary">Filter Pulau</button></div>
+          <div class="card-body" style="padding:12px 0 0">
+            <table class="province-table">
+              <thead><tr><th>Provinsi</th><th>Risk Score</th><th>MtM</th><th>Komoditas Kritis</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Jawa Timur</td><td><span style="font-family:var(--mono);font-weight:700;color:var(--red-600)">87</span></td><td style="font-family:var(--mono);color:var(--red-600)">+12.4%</td><td>Cabai, Bawang Merah</td><td><span class="risk-pill high">KRITIS</span></td></tr>
+                <tr><td style="font-weight:600">Sulawesi Selatan</td><td><span style="font-family:var(--mono);font-weight:700;color:var(--red-600)">81</span></td><td style="font-family:var(--mono);color:var(--red-600)">+9.7%</td><td>Cabai, Beras</td><td><span class="risk-pill high">KRITIS</span></td></tr>
+                <tr><td style="font-weight:600">DKI Jakarta</td><td><span style="font-family:var(--mono);font-weight:700;color:var(--amber-600)">74</span></td><td style="font-family:var(--mono);color:var(--amber-600)">+6.2%</td><td>Minyak, Daging</td><td><span class="risk-pill med">WASPADA</span></td></tr>
+                <tr><td style="font-weight:600">Kalimantan Timur</td><td><span style="font-family:var(--mono);font-weight:700;color:var(--amber-600)">68</span></td><td style="font-family:var(--mono);color:var(--amber-600)">+5.8%</td><td>Beras, Telur</td><td><span class="risk-pill med">WASPADA</span></td></tr>
+                <tr><td style="font-weight:600">Nusa Tenggara Timur</td><td><span style="font-family:var(--mono);font-weight:700;color:var(--green-700)">52</span></td><td style="font-family:var(--mono);color:var(--green-700)">&minus;1.2%</td><td>Beras, Gula</td><td><span class="risk-pill low">NORMAL</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-geospatial -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: PENGATURAN
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-pengaturan" class="view">
+        <div class="settings-section">
+          <div class="settings-group">
+            <div class="settings-group-title">Notifikasi &amp; Alert</div>
+            <div class="settings-row"><div><div class="settings-label">Early Warning Push Notification</div><div class="settings-desc">Kirim notifikasi saat risk score melampaui threshold</div></div><div class="toggle on"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Email Laporan Mingguan</div><div class="settings-desc">Kirim ringkasan inflasi setiap Senin pukul 08.00 WIB</div></div><div class="toggle on"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Alert SMS ke TPID</div><div class="settings-desc">Kirim SMS otomatis ke koordinator TPID saat status KRITIS</div></div><div class="toggle"></div></div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Threshold Early Warning</div>
+            <div class="settings-row"><div><div class="settings-label">Threshold MtM (Default: 2.5%)</div><div class="settings-desc">Alert dikirim jika proyeksi 14H melampaui nilai ini</div></div><span style="font-family:var(--mono);font-weight:700;color:var(--green-700)">2.5% &#177;1%</span></div>
+            <div class="settings-row"><div><div class="settings-label">Threshold Sentimen Negatif</div><div class="settings-desc">Alert dikirim jika sentimen negatif melampaui nilai ini</div></div><span style="font-family:var(--mono);font-weight:700;color:var(--green-700)">60%</span></div>
+            <div class="settings-row"><div><div class="settings-label">Volume Spike Indicator</div><div class="settings-desc">Deteksi lonjakan mention di media sosial sebagai leading indicator</div></div><div class="toggle on"></div></div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Data &amp; Sinkronisasi</div>
+            <div class="settings-row"><div><div class="settings-label">Auto-refresh Data Harga</div><div class="settings-desc">Perbarui data harga PIHPS setiap 6 jam</div></div><div class="toggle on"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Scraping Media Sosial</div><div class="settings-desc">Aktifkan pengumpulan data dari Twitter/X API</div></div><div class="toggle on"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Model Retraining Otomatis</div><div class="settings-desc">Perbarui model SARIMA/LSTM setiap minggu dengan data terbaru</div></div><div class="toggle"></div></div>
+          </div>
+        </div>
+      </div><!-- /view-pengaturan -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: BANTUAN
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-bantuan" class="view">
+        <div class="row-3">
+          <div class="card" style="cursor:pointer"><div class="card-body" style="text-align:center;padding:28px 20px"><div style="font-size:32px;margin-bottom:12px">&#128214;</div><div style="font-weight:700;margin-bottom:6px">Dokumentasi</div><div style="font-size:12px;color:var(--text-3)">Panduan lengkap penggunaan TOMOE 2.0</div></div></div>
+          <div class="card" style="cursor:pointer"><div class="card-body" style="text-align:center;padding:28px 20px"><div style="font-size:32px;margin-bottom:12px">&#127916;</div><div style="font-weight:700;margin-bottom:6px">Tutorial Video</div><div style="font-size:12px;color:var(--text-3)">Video panduan fitur-fitur utama</div></div></div>
+          <div class="card" style="cursor:pointer"><div class="card-body" style="text-align:center;padding:28px 20px"><div style="font-size:32px;margin-bottom:12px">&#128172;</div><div style="font-weight:700;margin-bottom:6px">Hubungi Tim</div><div style="font-size:12px;color:var(--text-3)">Kirim pertanyaan ke tim pengembang</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-icon kpi-icon-blue">?</div>Pertanyaan Umum (FAQ)</div></div>
+          <div class="card-body">
+            <div class="settings-group" style="border:none;box-shadow:none">
+              <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px"><div class="settings-label">Seberapa sering data harga diperbarui?</div><div class="settings-desc" style="font-size:12.5px;line-height:1.6">Data harga dari PIHPS dan Panel Harga Kementan diperbarui setiap hari kerja. Sentimen publik dari media sosial diperbarui setiap 6 jam.</div></div>
+              <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px"><div class="settings-label">Bagaimana cara membaca Risk Score?</div><div class="settings-desc" style="font-size:12.5px;line-height:1.6">Risk Score 0&ndash;100 menggabungkan 4 komponen: Price Momentum (40%), Forecast Delta (30%), Sentiment Acceleration (20%), dan Volatility Spike (10%). Skor di atas 70 mengindikasikan kondisi KRITIS.</div></div>
+              <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px"><div class="settings-label">Apa perbedaan MtM, YoY, dan YtD?</div><div class="settings-desc" style="font-size:12.5px;line-height:1.6"><strong>MtM</strong> (Month-to-Month): perubahan harga vs bulan sebelumnya. <strong>YoY</strong> (Year-on-Year): perubahan vs periode sama tahun lalu. <strong>YtD</strong> (Year-to-Date): akumulasi perubahan sejak awal tahun.</div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-bantuan -->
+
+
+      <!-- ═══════════════════════════════════════════════════════
+           VIEW: KELUAR
+      ═══════════════════════════════════════════════════════ -->
+      <div id="view-keluar" class="view">
+        <div class="card" style="max-width:440px;margin:40px auto">
+          <div class="card-body" style="text-align:center;padding:48px 32px">
+            <div style="font-size:48px;margin-bottom:16px">&#128075;</div>
+            <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Sampai Jumpa!</h2>
+            <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:24px">Sesi Anda sebagai anggota Tim TOMOE 2.0 akan berakhir. Data dan analisis tersimpan otomatis.</p>
+            <div style="display:flex;gap:10px;justify-content:center">
+              <button class="btn-secondary" onclick="navigate('view-dashboard')">&#8592; Kembali</button>
+              <button class="btn-primary">Keluar Sekarang</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-keluar -->
+
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# CPU-only PyTorch wheels — hindari unduhan CUDA ~2GB yang tak terpakai di sini.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.1
+pydantic-settings==2.3.0
+httpx==0.27.0
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.0
+statsmodels==0.14.2
+tensorflow-cpu==2.16.1
+# tf-keras (Keras 2 kompat) — tensorflow 2.16 bawa Keras 3 yang belum didukung
+# transformers 4.41 untuk model TF/BERT (IndoBERT). Tanpa ini sentiment gagal import.
+tf-keras==2.16.0
+transformers==4.41.2
+torch==2.3.0+cpu
+bertopic==0.16.2
+sentence-transformers==3.0.1
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.30
+redis==5.0.4
+python-dotenv==1.0.1
+apscheduler==3.10.4

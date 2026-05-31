@@ -1,0 +1,41 @@
+# ─── Secrets / Environment ───────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# ─── Node / Next.js ───────────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# ─── ML models / data dumps ───────────────────────────────────────
+models/
+*.pt
+*.pth
+*.h5
+*.pkl
+
+# ─── Excluded by request (berisi kredensial dev) ─────────────────
+docker-compose.yml
+
+# ─── OS / Editor junk ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

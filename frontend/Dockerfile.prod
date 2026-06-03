@@ -2,8 +2,9 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-# Reproducible install from the lockfile (unlike the dev image's npm install).
-RUN npm ci
+# npm install (not ci): the lockfile is generated on macOS and omits Linux-only
+# optional deps (@emnapi/*), so `npm ci`'s strict cross-platform check fails.
+RUN npm install --no-audit --no-fund
 
 FROM node:20-alpine AS builder
 WORKDIR /app

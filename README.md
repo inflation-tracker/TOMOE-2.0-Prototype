@@ -104,7 +104,7 @@ cd ml-service && pip install -r requirements.txt -r requirements-dev.txt && pyte
 cd ingestion && pip install -r requirements.txt pytest && pytest
 
 # Frontend
-cd frontend && npm ci && npx tsc --noEmit && npm run lint && npm run build
+cd frontend && npm install && npx tsc --noEmit && npm run lint && npm run build
 ```
 
 CI (GitHub Actions, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)) menjalankan

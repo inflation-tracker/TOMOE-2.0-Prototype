@@ -21,6 +21,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -fsS http://localhost:8000/health || exit 1
 
-# No --reload in prod; a couple of workers for throughput. Heavy jobs are still
-# offloaded to a threadpool per worker (see app/runtime.py).
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# No --reload in prod; a couple of workers for throughput. Railway injects
+# PORT, while local Docker can keep falling back to 8000.
+CMD exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2}

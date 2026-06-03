@@ -1,4 +1,5 @@
-# ─── Production image: non-root, no --reload, multiple workers ─────────────
+# Railway builds from the repository root when Root Directory is not applied.
+# Keep this Dockerfile root-context friendly.
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -7,12 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY ml-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ ./app/
+COPY ml-service/app/ ./app/
 
-# Run as an unprivileged user.
 RUN useradd --create-home --uid 10001 appuser
 USER appuser
 
@@ -21,6 +21,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -fsS http://localhost:${PORT:-8000}/health || exit 1
 
-# No --reload in prod; a couple of workers for throughput. Railway injects
-# PORT, while local Docker can keep falling back to 8000.
 CMD exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2}

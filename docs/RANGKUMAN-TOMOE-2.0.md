@@ -263,4 +263,4 @@ idempoten + gerbang kualitas, CI.
 ---
 
 *Dokumen ini dibuat sebagai onboarding tim. Untuk detail teknis, rujuk kode &
-`db/schema.sql`. Pertanyaan arsitektur → lihat juga PRD.md.*
+`db/schema.sql`.*

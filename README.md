@@ -6,6 +6,7 @@ memprediksi pergerakan harga (SARIMA/LSTM/Ensemble), menganalisis sentimen publi
 (IndoBERT), dan memunculkan peringatan dini tekanan harga per wilayah/komoditas.
 
 > 📄 Ringkasan arsitektur lengkap untuk tim: [`docs/RANGKUMAN-TOMOE-2.0.md`](docs/RANGKUMAN-TOMOE-2.0.md)
+> 📐 Kontrak bentuk data MVP/dummy: [`docs/DATA-CONTRACT.md`](docs/DATA-CONTRACT.md)
 
 ---
 

@@ -11,7 +11,7 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // TOMOE brand blue — soft-fintech primary per design/DESIGN.md (blue #3266f0).
+        // TOMOE brand blue — soft-fintech primary.
         brand: {
           50: "#f3f6ff",
           100: "#e9effe",

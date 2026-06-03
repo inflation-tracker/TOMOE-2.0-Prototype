@@ -29,6 +29,27 @@ def test_forecast_rejects_too_short_series(client):
     assert res.status_code == 422
 
 
+def test_forecast_backtest_naive(client):
+    series = [100.0 + i for i in range(40)]
+    res = client.post(
+        "/forecast/backtest",
+        json={
+            "series": series,
+            "model": "naive",
+            "horizon": 3,
+            "initial_train_size": 24,
+            "step_size": 3,
+            "max_folds": 4,
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["model"] == "NAIVE"
+    assert body["fold_count"] == 4
+    assert body["input_length"] == len(series)
+    assert body["metrics"]["mape"] is not None
+
+
 def test_ews_detect_short_series_no_alert(client):
     res = client.post("/ews/detect", json={"series": [1.0, 2.0, 3.0, 4.0, 5.0], "current_value": 4.0})
     assert res.status_code == 200

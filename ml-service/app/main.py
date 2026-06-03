@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 import pandas as pd
 import numpy as np
 import logging
@@ -73,6 +73,16 @@ class EWSRequest(BaseModel):
     n_sigma: float = Field(default=2.0, gt=0)
     # Use the robust median+MAD detector (recommended for skewed price series).
     robust: bool = True
+
+
+class BacktestRequest(BaseModel):
+    series: Annotated[list[float], Field(min_length=19, max_length=_MAX)]
+    horizon: int = Field(default=7, ge=1, le=90)
+    initial_train_size: Optional[int] = Field(default=None, ge=12)
+    step_size: int = Field(default=7, ge=1)
+    max_folds: int = Field(default=12, ge=1, le=52)
+    model: Literal["naive", "sarima", "ensemble"] = "sarima"
+    seasonal_periods: Optional[int] = Field(default=7, ge=2, le=366)
 
 
 # ─── Endpoints ──────────────────────────────────────────────────────────────
@@ -148,6 +158,40 @@ async def run_forecast(req: ForecastRequest):
         for i in range(req.steps)
     ]
     return {**result, "dates": dates[: req.steps], "input_length": len(series)}
+
+
+@app.post("/forecast/backtest", dependencies=[Depends(require_api_key)])
+async def run_backtest(req: BacktestRequest):
+    """Walk-forward backtest for forecast validation."""
+    series = pd.Series(req.series)
+    if req.model == "ensemble" and len(series) < 40:
+        raise HTTPException(
+            status_code=400,
+            detail="Need at least 40 data points for ensemble backtesting",
+        )
+
+    def _compute():
+        from app.forecasting.backtest import walk_forward_backtest
+        return walk_forward_backtest(
+            series,
+            horizon=req.horizon,
+            initial_train_size=req.initial_train_size,
+            step_size=req.step_size,
+            max_folds=req.max_folds,
+            model=req.model,
+            seasonal_periods=req.seasonal_periods,
+        )
+
+    try:
+        result = await run_job(_compute)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except (CapacityError, JobTimeout):
+        raise
+    except Exception as e:
+        logger.error(f"Backtest error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    return {**result, "input_length": len(series)}
 
 
 @app.post("/sentiment/analyze", dependencies=[Depends(require_api_key)])

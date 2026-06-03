@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-import { mockSentimentSummary } from '@/lib/mock-data'
+import { getSentimentSummary } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  return NextResponse.json({
-    summary: mockSentimentSummary,
-    overall: { neg: 62, neu: 25, pos: 13 },
-  })
+  return NextResponse.json(await getSentimentSummary())
 }

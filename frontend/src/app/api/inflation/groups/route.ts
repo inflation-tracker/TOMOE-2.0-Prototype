@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { mockGroupInflation } from '@/lib/mock-data'
+import { getGroupInflation } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  return NextResponse.json(mockGroupInflation)
+  return NextResponse.json(await getGroupInflation())
 }

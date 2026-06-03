@@ -138,7 +138,7 @@ TOMOE-2.0/
 ├── frontend/          Next.js (UI + /api + auth + proxy ML)
 ├── ml-service/        FastAPI (forecast, sentimen, topik, EWS)
 ├── ingestion/         APScheduler ETL (scraper + writer + DQ gate)
-├── db/                schema.sql + seed.sql (PostgreSQL/TimescaleDB)
+├── db/                schema.sql (TimescaleDB), schema.postgres.sql, seed.sql
 ├── docs/              dokumentasi (RANGKUMAN, dll)
 ├── .husky/            Git hooks
 ├── .github/workflows/ CI
@@ -155,6 +155,21 @@ Vercel hanya menjalankan Next.js. Komponen lain di-host terpisah:
 - **ML Service** → Railway/Render/Fly.io (`ml-service/Dockerfile.prod`)
 - **Ingestion** → Vercel Cron atau worker eksternal
 - **Redis** → Upstash (bila perlu)
+
+### Demo DB di Railway Postgres
+Railway Postgres biasa umumnya tidak menyediakan TimescaleDB. Untuk demo,
+gunakan schema Postgres-only lalu seed data kontrak:
+
+```bash
+psql "$DATABASE_URL" -f db/schema.postgres.sql
+psql "$DATABASE_URL" -f db/seed.sql
+```
+
+Setelah itu pasang URL Postgres publik Railway sebagai `DATABASE_URL` di
+Vercel agar route `/api/*` membaca data demo dari DB. Bila koneksi lintas
+platform meminta SSL, tambahkan env `PGSSLMODE=require` di Vercel atau pakai
+URL dengan query `?sslmode=require`. Untuk deployment time-series/produksi,
+gunakan `db/schema.sql` di TimescaleDB.
 
 ---
 

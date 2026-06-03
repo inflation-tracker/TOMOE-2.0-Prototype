@@ -185,7 +185,7 @@ Dev compose **mount source code** sebagai volume (hot-reload): edit kode langsun
 tercermin tanpa rebuild image.
 
 ### Production
-- Dockerfile produksi multi-stage, **non-root**: `frontend/Dockerfile.prod`, `ml-service/Dockerfile.prod`, `Dockerfile.ingestion`.
+- Dockerfile produksi multi-stage, **non-root**: `frontend/Dockerfile.prod`, `ml-service/Dockerfile.prod`, `ingestion/Dockerfile.prod`.
 - `docker-compose.prod.yml`: tag image dipin, resource limit, restart policy, `npm ci`, DB/Redis tak ter-expose ke host, `AUTH_REQUIRED=true`.
 ```bash
 POSTGRES_PASSWORD=… ML_API_KEY=… AUTH_SECRET=… \
@@ -239,7 +239,7 @@ TOMOE-2.0/
 ├── ml-service/        FastAPI (forecast, sentimen, topik, EWS)
 │   └── app/{forecasting,nlp,ews}
 ├── ingestion/         APScheduler ETL (scraper PIHPS/BPS + writer + DQ)
-├── db/                schema.sql + seed.sql (PostgreSQL/TimescaleDB)
+├── db/                schema.sql (TimescaleDB), schema.postgres.sql, seed.sql
 ├── docs/              dokumentasi (termasuk file ini)
 ├── docker-compose.yml / docker-compose.prod.yml
 └── .github/workflows/ CI

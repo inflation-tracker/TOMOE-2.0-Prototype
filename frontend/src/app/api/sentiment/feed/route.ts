@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { mockSentimentFeed } from '@/lib/mock-data'
+import { getSentimentFeed } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  return NextResponse.json(mockSentimentFeed)
+  return NextResponse.json(await getSentimentFeed())
 }

@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
-import { mockInflationHistory } from '@/lib/mock-data'
+import { getInflationHistory } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const component = searchParams.get('component')
-
-  const data = component
-    ? mockInflationHistory.filter((d) => d.component === component)
-    : mockInflationHistory
-
-  return NextResponse.json(data)
+  return NextResponse.json(await getInflationHistory(component))
 }

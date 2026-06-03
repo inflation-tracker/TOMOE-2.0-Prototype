@@ -146,7 +146,7 @@
     <tr><td>ML service (FastAPI)</td><td><span class="pill done">JALAN</span></td><td>EWS 2σ, SARIMA (MAPE 8,14%), sentiment IndoBERT benar-benar dihitung.</td></tr>
     <tr><td>Integrasi DB (slice 1)</td><td><span class="pill partial">SEBAGIAN</span></td><td>Halaman <code>komoditas</code> &amp; <code>early-warning</code> baca PostgreSQL nyata (fallback mock).</td></tr>
     <tr><td>Ingestion PIHPS/BPS</td><td><span class="pill partial">SEBAGIAN</span></td><td>Scraper + scheduler ada; belum tervalidasi terhadap API resmi &amp; belum reliabel produksi.</td></tr>
-    <tr><td>Skema DB (TimescaleDB)</td><td><span class="pill done">JALAN</span></td><td>Schema + seed ada; tabel <code>inflation_index</code> masih kosong.</td></tr>
+    <tr><td>Skema DB</td><td><span class="pill done">JALAN</span></td><td>Schema TimescaleDB dan schema Postgres demo ada; seed demo mengisi <code>inflation_index</code>.</td></tr>
   </table>
 
   <h3>Celah utama menuju "siap dipakai user"</h3>

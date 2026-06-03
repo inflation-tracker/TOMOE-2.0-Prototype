@@ -1,0 +1,47 @@
+.git
+.github
+.husky
+
+# Local environment/secrets
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Node / Next.js artifacts
+node_modules
+**/node_modules
+.next
+**/.next
+out
+build
+dist
+*.tsbuildinfo
+
+# Python artifacts
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+**/.pytest_cache
+.venv
+venv
+env
+*.egg-info
+
+# Heavy or non-runtime artifacts
+models
+**/models
+*.pt
+*.pth
+*.h5
+*.pkl
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.log
+.idea
+.vscode

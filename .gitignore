@@ -1,3 +1,6 @@
+# ─── Arsip lokal (dokumen non-arsitektur, JANGAN di-push) ────────
+_archive/
+
 # ─── Secrets / Environment ───────────────────────────────────────
 .env
 .env.local

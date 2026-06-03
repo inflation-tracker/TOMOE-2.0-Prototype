@@ -5,8 +5,6 @@ fokus awal **Sulawesi Tengah**. Memantau harga komoditas & inflasi real-time,
 memprediksi pergerakan harga (SARIMA/LSTM/Ensemble), menganalisis sentimen publik
 (IndoBERT), dan memunculkan peringatan dini tekanan harga per wilayah/komoditas.
 
-> 📄 Ringkasan arsitektur lengkap untuk tim: [`docs/RANGKUMAN-TOMOE-2.0.md`](docs/RANGKUMAN-TOMOE-2.0.md)
-
 ---
 
 ## Arsitektur singkat
@@ -34,9 +32,12 @@ Browser ─▶ Frontend (Next.js)  ─SQL─▶  PostgreSQL + TimescaleDB
 Prasyarat: **Docker** (+ Docker Compose). Lihat catatan Colima di bawah bila pakai macOS tanpa Docker Desktop.
 
 ```bash
-cp .env.example .env          # sesuaikan bila perlu
+cp .env.example .env          # isi nilai yang diperlukan
 docker compose up -d --build  # db + redis + ml-service + frontend (+ ingestion)
 ```
+
+> `docker-compose.yml` (dev) tidak ikut di-commit karena memuat kredensial dev —
+> buat sendiri secara lokal, mengacu pada `docker-compose.prod.yml` sebagai contoh.
 
 - Frontend  → http://localhost:3000
 - ML API    → http://localhost:8000  (Swagger: `/docs`)
@@ -44,8 +45,8 @@ docker compose up -d --build  # db + redis + ml-service + frontend (+ ingestion)
 Compose dev me-*mount* source code (hot-reload): edit kode langsung tercermin
 tanpa rebuild image. Untuk re-seed DB (skema/seed berubah): `docker compose down -v && docker compose up -d`.
 
-**Login demo:** `admin@bi.go.id` / `tomoe123` (juga `analyst@bi.go.id`, `viewer@tpid.go.id`).
-⚠️ Ganti password & secret sebelum produksi.
+**Akun demo:** disediakan via seed ([`db/seed.sql`](db/seed.sql)) dengan tiga role
+(admin / analyst / viewer). Kredensial & secret di-set lewat `.env` — wajib diganti sebelum produksi.
 
 ### Production
 ```bash
@@ -138,11 +139,10 @@ TOMOE-2.0/
 ├── ml-service/        FastAPI (forecast, sentimen, topik, EWS)
 ├── ingestion/         APScheduler ETL (scraper + writer + DQ gate)
 ├── db/                schema.sql + seed.sql (PostgreSQL/TimescaleDB)
-├── docs/              dokumentasi (RANGKUMAN, dll)
 ├── .husky/            Git hooks
 ├── .github/workflows/ CI
-├── docker-compose.yml / docker-compose.prod.yml
-└── package.json       tooling root (Husky)
+├── docker-compose.prod.yml   orkestrasi produksi
+└── package.json              tooling root (Husky)
 ```
 
 ---

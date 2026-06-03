@@ -3,6 +3,8 @@ import logging
 from functools import lru_cache
 from typing import Optional
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,7 +15,7 @@ def load_topic_model():
     from sentence_transformers import SentenceTransformer
     from sklearn.feature_extraction.text import CountVectorizer
 
-    embedding_model = SentenceTransformer("firqaaa/indo-sentence-bert-base")
+    embedding_model = SentenceTransformer(settings.topic_embedding_model)
     vectorizer_model = CountVectorizer(
         ngram_range=(1, 2),
         stop_words=["yang", "dan", "di", "ke", "dari", "ini", "itu", "dengan", "untuk"],
@@ -35,8 +37,11 @@ def fit_topics(documents: list[str]) -> dict:
     topics, probs = model.fit_transform(documents)
     topic_info = model.get_topic_info()
 
+    # BERTopic returns numpy ints which FastAPI's JSON encoder can't serialize.
+    topics = [int(t) for t in topics]
+
     return {
-        "num_topics": len(set(topics)) - 1,  # exclude outlier topic -1
+        "num_topics": len(set(topics)) - (1 if -1 in topics else 0),  # exclude outlier topic -1
         "topics": topics,
         "topic_info": topic_info[["Topic", "Count", "Name"]].to_dict(orient="records"),
     }

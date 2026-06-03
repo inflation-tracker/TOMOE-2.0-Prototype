@@ -1,0 +1,106 @@
+# ─── TOMOE 2.0 — PRODUCTION compose ────────────────────────────────────────
+# Differences vs docker-compose.yml (dev): pinned image tags, production
+# Dockerfiles (multi-stage, non-root, no --reload/dev server), NO source
+# bind-mounts, restart policies, resource limits, and the DB/Redis/ML ports are
+# NOT published to the host (internal network only — only the frontend is
+# exposed). Secrets come from the environment / a .env file.
+#
+#   POSTGRES_PASSWORD, ML_API_KEY, AUTH_SECRET must be set (no dev defaults).
+#   Run: docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  db:
+    image: timescale/timescaledb:2.17.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tomoe_db
+      POSTGRES_USER: tomoe
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tomoe -d tomoe_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    mem_limit: 320m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://tomoe:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/tomoe_db
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: INFO
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+      API_KEY: ${ML_API_KEY:?set ML_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ml_models:/app/models
+    mem_limit: 4g
+    cpus: 2.0
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile.ingestion
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://tomoe:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/tomoe_db
+      BPS_API_KEY: ${BPS_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 512m
+    cpus: 1.0
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    environment:
+      ML_INTERNAL_URL: http://ml-service:8000
+      ML_API_KEY: ${ML_API_KEY:?set ML_API_KEY}
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+      AUTH_REQUIRED: "true"
+      DATABASE_URL: postgresql://tomoe:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/tomoe_db
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - ml-service
+    mem_limit: 512m
+    cpus: 1.0
+
+volumes:
+  postgres_data:
+  redis_data:
+  ml_models:
+
+networks:
+  default:
+    name: tomoe_network

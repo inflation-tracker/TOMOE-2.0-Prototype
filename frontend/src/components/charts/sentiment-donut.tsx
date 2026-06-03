@@ -9,7 +9,7 @@ interface SentimentDonutProps {
   size?: number
 }
 
-const COLORS = ['#ef4444', '#f59e0b', '#22a05a']
+const COLORS = ['#e0584f', '#f3c24b', '#2bb37a']
 
 export function SentimentDonut({ neg, neu, pos, size = 140 }: SentimentDonutProps) {
   const data = [

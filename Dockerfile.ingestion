@@ -1,0 +1,21 @@
+# ─── ETL scheduler image (build context = repo root) ───────────────────────
+# Bundles the ingestion package plus the ml-service `app` package (config is
+# shared). Slim deps — no ML frameworks.
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ingestion/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ml-service/app ./app
+COPY ingestion ./ingestion
+
+RUN useradd --create-home --uid 10001 appuser
+USER appuser
+
+CMD ["python", "-m", "ingestion.scheduler"]

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { mockDashboardSummary } from '@/lib/mock-data'
+import { getDashboardSummary } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  return NextResponse.json({ ...mockDashboardSummary, last_updated: new Date().toISOString() })
+  return NextResponse.json(await getDashboardSummary())
 }

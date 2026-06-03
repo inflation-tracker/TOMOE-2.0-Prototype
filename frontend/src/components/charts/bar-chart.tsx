@@ -15,7 +15,7 @@ interface BarChartProps {
 
 export function TomoeBarChart({ data, xKey, yKey, label, horizontal, colorFn, yFormatter, height = 220 }: BarChartProps) {
   const fmt = yFormatter ?? ((v: number) => v.toFixed(2) + '%')
-  const defaultColor = (v: number) => (v >= 0 ? 'rgba(239,68,68,0.75)' : 'rgba(34,160,90,0.75)')
+  const defaultColor = (v: number) => (v >= 0 ? 'rgba(224,88,79,0.75)' : 'rgba(43,179,122,0.75)')
 
   return (
     <ChartFrame height={height}>

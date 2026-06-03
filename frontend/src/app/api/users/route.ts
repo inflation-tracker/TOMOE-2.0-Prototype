@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { listUsers } from '@/lib/users'
+import { verifySession, SESSION_COOKIE } from '@/lib/auth'
+import { recordAudit } from '@/lib/audit'
 
-const mockUsers = [
-  { id: 1, email: 'admin@bi.go.id', name: 'Admin BI Sulteng', role: 'admin', region: 'Sulawesi Tengah', last_login: new Date().toISOString() },
-  { id: 2, email: 'analyst@bi.go.id', name: 'Analis TPID', role: 'analyst', region: 'Kota Palu', last_login: new Date(Date.now() - 3600000).toISOString() },
-  { id: 3, email: 'viewer@tpid.go.id', name: 'Staf TPID', role: 'tpid', region: 'Sulawesi Tengah', last_login: new Date(Date.now() - 86400000).toISOString() },
-]
+export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  return NextResponse.json(mockUsers)
+// Access control is enforced by middleware (admin-only on /api/users); we still
+// read the session here to attribute the audit entry. Password hashes are never
+// included — listUsers() strips them.
+export async function GET(req: Request) {
+  const session = await verifySession(cookies().get(SESSION_COOKIE)?.value)
+  await recordAudit({
+    userId: session?.sub ?? null,
+    action: 'list_users',
+    entity: 'user',
+    ip: req.headers.get('x-forwarded-for'),
+  })
+  return NextResponse.json(listUsers())
 }

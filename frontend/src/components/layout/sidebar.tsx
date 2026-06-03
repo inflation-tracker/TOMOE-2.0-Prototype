@@ -86,7 +86,7 @@ export function Sidebar() {
       {/* Footer badge */}
       {!col && (
         <div className="border-t border-gray-100 p-3">
-          <div className="rounded-lg bg-gradient-to-br from-brand-50 to-emerald-50 border border-brand-100 p-2.5 text-center">
+          <div className="rounded-lg bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-100 p-2.5 text-center">
             <p className="text-[10px] font-bold text-brand-700">🏆 PIDI Digdaya X 2026</p>
             <p className="text-[9px] text-gray-400 mt-0.5">Bank Indonesia × OJK</p>
             <div className="mt-1.5 rounded-md bg-brand-500 py-1 px-2">

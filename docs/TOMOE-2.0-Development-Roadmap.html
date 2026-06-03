@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>TOMOE 2.0 — Roadmap Pengembangan Menuju Siap Pakai (Pemda/BI)</title>
+<style>
+  :root{
+    --brand:#28c26c; --brand-dk:#0f7a45; --ink:#14211b; --muted:#5b6b62;
+    --line:#dfe7e2; --bg-soft:#f4f8f5; --amber:#e0a800; --red:#d64545; --blue:#2f6df0;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    font-family:"Plus Jakarta Sans","Helvetica Neue",Arial,sans-serif;
+    color:var(--ink); margin:0; font-size:10.5pt; line-height:1.5;
+  }
+  code,.mono{font-family:"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace; font-size:9pt;}
+
+  /* ---- Page setup ---- */
+  @page{ size:A4; margin:16mm 14mm 18mm 14mm; }
+  @page :first{ margin:0; }
+
+  .page{ page-break-after:always; }
+  .page:last-child{ page-break-after:auto; }
+  h2{ page-break-after:avoid; }
+  h3{ page-break-after:avoid; }
+  table,.phase,.card{ page-break-inside:avoid; }
+
+  /* ---- Cover ---- */
+  .cover{
+    height:297mm; width:210mm; position:relative; overflow:hidden;
+    background:linear-gradient(150deg,#08130d 0%,#0f3d27 48%,#0f7a45 100%);
+    color:#eafff3; padding:30mm 24mm; display:flex; flex-direction:column;
+  }
+  .cover .badge{
+    display:inline-block; align-self:flex-start; border:1px solid rgba(255,255,255,.35);
+    border-radius:999px; padding:6px 16px; font-size:9pt; letter-spacing:.16em;
+    text-transform:uppercase; color:#bdf5d4; margin-bottom:auto;
+  }
+  .cover h1{ font-size:42pt; line-height:1.05; margin:0 0 10px; font-weight:800; letter-spacing:-1px;}
+  .cover h1 small{ display:block; font-size:16pt; font-weight:600; color:#7fe3a6; letter-spacing:0; margin-top:14px;}
+  .cover .sub{ font-size:12pt; color:#cdeede; max-width:140mm; line-height:1.6;}
+  .cover .meta{ margin-top:28px; font-size:10pt; color:#9fdcb9; border-top:1px solid rgba(255,255,255,.18); padding-top:18px;}
+  .cover .meta b{color:#eafff3;}
+  .cover .glow{ position:absolute; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle,rgba(40,194,108,.55),transparent 70%); right:-160px; top:-120px; filter:blur(8px);}
+
+  /* ---- Typography ---- */
+  h2{
+    font-size:18pt; margin:0 0 4px; color:var(--brand-dk); font-weight:800; letter-spacing:-.3px;
+    border-bottom:3px solid var(--brand); padding-bottom:8px;
+  }
+  .kicker{font-size:8.5pt; letter-spacing:.18em; text-transform:uppercase; color:var(--brand); font-weight:700; margin:0 0 2px;}
+  h3{ font-size:12.5pt; margin:22px 0 6px; color:var(--ink); font-weight:700;}
+  p{margin:0 0 9px;}
+  ul,ol{margin:0 0 10px; padding-left:18px;}
+  li{margin-bottom:4px;}
+  .lead{font-size:11pt; color:var(--muted);}
+  a{color:var(--brand-dk); text-decoration:none;}
+
+  /* ---- Tables ---- */
+  table{width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9.3pt;}
+  th{background:var(--brand-dk); color:#fff; text-align:left; padding:7px 9px; font-weight:600; vertical-align:top;}
+  td{border-bottom:1px solid var(--line); padding:7px 9px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--bg-soft);}
+  table.tight td,table.tight th{padding:5px 8px; font-size:8.8pt;}
+
+  /* ---- Cards / callouts ---- */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .card{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:#fff;}
+  .card h4{margin:0 0 6px; font-size:10.5pt; color:var(--brand-dk);}
+  .pill{display:inline-block; border-radius:6px; padding:1px 8px; font-size:8pt; font-weight:700; letter-spacing:.03em;}
+  .pill.done{background:#dff5e7; color:var(--brand-dk);}
+  .pill.partial{background:#fff2cf; color:#8a6500;}
+  .pill.todo{background:#fde2e2; color:#a32626;}
+  .note{background:var(--bg-soft); border-left:4px solid var(--brand); padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0; font-size:9.5pt;}
+  .warn{background:#fff7e8; border-left:4px solid var(--amber);}
+
+  /* ---- Phase block ---- */
+  .phase{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:14px 0;}
+  .phase .head{display:flex; align-items:center; gap:14px; padding:12px 16px; background:var(--bg-soft); border-bottom:1px solid var(--line);}
+  .phase .num{flex:0 0 auto; width:42px; height:42px; border-radius:10px; background:var(--brand); color:#fff; font-weight:800; font-size:16pt; display:flex; align-items:center; justify-content:center;}
+  .phase .head h3{margin:0; font-size:13pt;}
+  .phase .head .dur{margin-left:auto; font-size:9pt; color:var(--muted); text-align:right;}
+  .phase .head .dur b{display:block; font-size:11pt; color:var(--brand-dk);}
+  .phase .body{padding:6px 16px 12px;}
+
+  /* ---- Timeline ---- */
+  .tl{font-size:8.5pt; margin-top:8px;}
+  .tl .row{display:flex; align-items:center; margin-bottom:6px;}
+  .tl .lbl{flex:0 0 132px; font-weight:600;}
+  .tl .track{flex:1; background:#eef3f0; border-radius:6px; height:18px; position:relative;}
+  .tl .bar{position:absolute; height:18px; border-radius:6px; background:var(--brand); top:0; color:#fff; font-size:7.5pt; line-height:18px; padding-left:7px; white-space:nowrap; overflow:hidden;}
+  .tl .bar.alt{background:var(--brand-dk);}
+  .tl .scale{display:flex; flex:1; margin-left:132px; border-top:1px solid var(--line); padding-top:3px; color:var(--muted);}
+  .tl .scale span{flex:1; font-size:7.5pt;}
+
+  .foot{position:fixed; bottom:6mm; left:14mm; right:14mm; font-size:7.5pt; color:var(--muted); display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:4px;}
+  .tag{font-size:8pt; color:var(--muted);}
+  .num-list-lg{counter-reset:step;}
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="glow"></div>
+  <span class="badge">Roadmap Pengembangan · Internal</span>
+  <h1>TOMOE 2.0
+    <small>Dari Prototipe Berjalan → Siap Dipakai (Deployment Nasional Tahap 1)</small>
+  </h1>
+  <p class="sub">Rencana pengembangan bertahap <b>Early Inflation Detection System</b> dengan
+  <b>basis nasional</b> pada rilis pertama — menutup celah antara prototipe lokal yang sudah berjalan
+  dan sistem produksi yang dapat digunakan analis Bank Indonesia (pusat) serta pemda dalam pengambilan
+  keputusan harian. Integrasi langsung per-provinsi <b>belum termasuk</b> di tahap ini; data provinsi
+  hanya menjadi layer peta inflasi spasial historis.</p>
+  <div class="meta">
+    <b>Proyek:</b> TOMOE 2.0 — PIDI Digdaya X 2026 (Bank Indonesia × OJK), Tema PS2 Inflasi &amp; Pangan &nbsp;·&nbsp;
+    <b>Owner:</b> rohisrachman<br>
+    <b>Versi dokumen:</b> 1.0 &nbsp;·&nbsp; <b>Tanggal:</b> 31 Mei 2026 &nbsp;·&nbsp;
+    <b>Cakupan rilis 1:</b> Nasional · <b>Stakeholder:</b> Analis BI (pusat) · TPID · Pemda
+  </div>
+</div>
+
+<!-- ============ 1. RINGKASAN + KONDISI SAAT INI ============ -->
+<div class="page">
+  <p class="kicker">Bagian 1</p>
+  <h2>Ringkasan Eksekutif &amp; Kondisi Saat Ini</h2>
+
+  <p class="lead">Dokumen ini memetakan <b>9 fase pengembangan</b> dari kondisi saat ini (prototipe full-stack
+  yang berjalan di lokal dengan data sebagian nyata) menuju sistem yang layak produksi dan dapat
+  dioperasikan oleh pengguna akhir. Estimasi total: <b>±20–26 minggu</b> untuk tim kecil (2–4 orang).</p>
+
+  <div class="note"><b>Cakupan deployment Tahap 1 — Nasional.</b> Rilis pertama beroperasi pada
+  <b>agregat nasional</b>: forecast, EWS, dan sentiment dihitung pada level nasional.
+  <b>Belum ada integrasi data langsung per-provinsi.</b> Data provinsi dipakai <i>hanya</i> sebagai
+  layer <b>peta inflasi spasial historis</b> (snapshot inflasi yang sudah lalu) untuk konteks visual —
+  bukan feed harian dan bukan sumber alert/forecast. Integrasi penuh per-provinsi dijadwalkan untuk
+  <b>Tahap 2 (v2)</b>.</div>
+
+  <h3>Apa yang sudah berjalan hari ini</h3>
+  <table class="tight">
+    <tr><th style="width:26%">Komponen</th><th style="width:12%">Status</th><th>Catatan</th></tr>
+    <tr><td>Stack lokal (Docker Compose)</td><td><span class="pill done">JALAN</span></td><td>db + redis + ml-service + frontend semua <i>healthy</i> via Colima.</td></tr>
+    <tr><td>Frontend Next.js 14</td><td><span class="pill done">JALAN</span></td><td>Feature-complete (5 modul), build &amp; lint bersih, brand hijau, a11y dasar.</td></tr>
+    <tr><td>ML service (FastAPI)</td><td><span class="pill done">JALAN</span></td><td>EWS 2σ, SARIMA (MAPE 8,14%), sentiment IndoBERT benar-benar dihitung.</td></tr>
+    <tr><td>Integrasi DB (slice 1)</td><td><span class="pill partial">SEBAGIAN</span></td><td>Halaman <code>komoditas</code> &amp; <code>early-warning</code> baca PostgreSQL nyata (fallback mock).</td></tr>
+    <tr><td>Ingestion PIHPS/BPS</td><td><span class="pill partial">SEBAGIAN</span></td><td>Scraper + scheduler ada; belum tervalidasi terhadap API resmi &amp; belum reliabel produksi.</td></tr>
+    <tr><td>Skema DB (TimescaleDB)</td><td><span class="pill done">JALAN</span></td><td>Schema + seed ada; tabel <code>inflation_index</code> masih kosong.</td></tr>
+  </table>
+
+  <h3>Celah utama menuju "siap dipakai user"</h3>
+  <table class="tight">
+    <tr><th style="width:26%">Area</th><th style="width:12%">Status</th><th>Yang belum ada</th></tr>
+    <tr><td>Data nyata end-to-end</td><td><span class="pill partial">SEBAGIAN</span></td><td>5 halaman masih mock; pipeline data resmi belum mengisi seluruh tabel.</td></tr>
+    <tr><td>Autentikasi &amp; peran (RBAC)</td><td><span class="pill todo">BELUM</span></td><td>Belum ada login, peran (admin/analis/viewer), atau audit aksi.</td></tr>
+    <tr><td>Deployment / hosting</td><td><span class="pill todo">BELUM</span></td><td>Hanya jalan di laptop; belum ada server, domain, HTTPS, backup.</td></tr>
+    <tr><td>Pengujian otomatis</td><td><span class="pill todo">BELUM</span></td><td>Belum ada unit/integration/E2E test maupun CI.</td></tr>
+    <tr><td>Validasi model &amp; kalibrasi</td><td><span class="pill partial">SEBAGIAN</span></td><td>Metrik ada di prototipe; belum divalidasi pada data riil Sulteng penuh.</td></tr>
+    <tr><td>Version control</td><td><span class="pill todo">BELUM</span></td><td>Seluruh pekerjaan masih <i>untracked</i> — belum di-commit ke Git.</td></tr>
+    <tr><td>Dokumentasi &amp; pelatihan pengguna</td><td><span class="pill todo">BELUM</span></td><td>Belum ada manual pengguna, runbook operasional, atau materi training TPID.</td></tr>
+    <tr><td>Keamanan &amp; kepatuhan</td><td><span class="pill todo">BELUM</span></td><td>Belum ada manajemen secret, hardening, legalitas scraping sosmed.</td></tr>
+  </table>
+
+  <div class="note warn"><b>Prinsip roadmap:</b> "siap dipakai" bukan berarti fitur baru, melainkan
+  <b>kepercayaan</b> — data yang benar, sistem yang aman, selalu menyala, dan terbukti akurat.
+  Fokus 9 fase di bawah adalah mengubah prototipe menjadi sistem operasional, bukan menambah modul.</div>
+</div>
+
+<!-- ============ 2. DEFINISI SIAP PAKAI + TIMELINE ============ -->
+<div class="page">
+  <p class="kicker">Bagian 2</p>
+  <h2>Definisi "Siap Dipakai" &amp; Peta Waktu</h2>
+
+  <h3>Kriteria kelayakan produksi (Definition of Ready-for-Users)</h3>
+  <div class="grid2">
+    <div class="card"><h4>Data &amp; Akurasi</h4>
+      <ul><li>Seluruh halaman membaca data nyata dari DB.</li>
+      <li>Pipeline harian PIHPS &amp; BPS sukses ≥ 95%.</li>
+      <li>MAPE forecast ≤ 10%; akurasi sentiment ≥ 80% tervalidasi.</li>
+      <li>Freshness data ≤ 1 hari.</li></ul></div>
+    <div class="card"><h4>Keamanan &amp; Akses</h4>
+      <ul><li>Login + RBAC (admin / analis / viewer).</li>
+      <li>Audit log untuk semua aksi alert.</li>
+      <li>HTTPS, secret terkelola, backup harian.</li></ul></div>
+    <div class="card"><h4>Keandalan &amp; Performa</h4>
+      <ul><li>Uptime ≥ 99%; load dashboard p95 &lt; 2 dtk.</li>
+      <li>Monitoring + alert operasional aktif.</li>
+      <li>Recovery plan &amp; backup teruji.</li></ul></div>
+    <div class="card"><h4>Adopsi Pengguna</h4>
+      <ul><li>UAT lulus bersama TPID/BI.</li>
+      <li>Manual pengguna + materi pelatihan tersedia.</li>
+      <li>Jalur dukungan (support) ditetapkan.</li></ul></div>
+  </div>
+
+  <h3>Peta waktu indikatif (tim kecil 2–4 orang)</h3>
+  <div class="tl">
+    <div class="row"><span class="lbl">F0 Konsolidasi</span><div class="track"><div class="bar" style="left:0%;width:8%">1–2 mg</div></div></div>
+    <div class="row"><span class="lbl">F1 Data nyata penuh</span><div class="track"><div class="bar alt" style="left:8%;width:14%">3 mg</div></div></div>
+    <div class="row"><span class="lbl">F2 Ingestion produksi</span><div class="track"><div class="bar" style="left:22%;width:14%">3 mg</div></div></div>
+    <div class="row"><span class="lbl">F3 Validasi ML</span><div class="track"><div class="bar alt" style="left:30%;width:14%">2–3 mg</div></div></div>
+    <div class="row"><span class="lbl">F4 Auth &amp; RBAC</span><div class="track"><div class="bar" style="left:44%;width:11%">2 mg</div></div></div>
+    <div class="row"><span class="lbl">F5 Deploy &amp; infra</span><div class="track"><div class="bar alt" style="left:52%;width:14%">2–3 mg</div></div></div>
+    <div class="row"><span class="lbl">F6 QA &amp; testing</span><div class="track"><div class="bar" style="left:60%;width:14%">paralel</div></div></div>
+    <div class="row"><span class="lbl">F7 Pilot / UAT</span><div class="track"><div class="bar alt" style="left:74%;width:14%">3 mg</div></div></div>
+    <div class="row"><span class="lbl">F8 Go-live + operasi</span><div class="track"><div class="bar" style="left:88%;width:12%">∞</div></div></div>
+    <div class="row"><div class="scale"><span>Bln 1</span><span>Bln 2</span><span>Bln 3</span><span>Bln 4</span><span>Bln 5</span><span>Bln 6+</span></div></div>
+  </div>
+  <p class="tag">Fase 6 (QA) berjalan paralel sejak Fase 1. Beberapa fase dapat tumpang tindih bila kapasitas tim memungkinkan.</p>
+
+  <div class="note"><b>Jalur kritis (critical path):</b> F0 → F1 → F2 → F3 → F7. Data nyata yang benar dan
+  model tervalidasi adalah prasyarat UAT; auth (F4) dan deploy (F5) dapat dikerjakan paralel oleh anggota tim berbeda.</div>
+</div>
+
+<!-- ============ 3. FASE 0-2 ============ -->
+<div class="page">
+  <p class="kicker">Bagian 3 · Detail Fase</p>
+  <h2>Fase 0–2 · Fondasi &amp; Data Nyata</h2>
+
+  <div class="phase">
+    <div class="head"><div class="num">0</div><h3>Konsolidasi &amp; Version Control</h3><div class="dur">Estimasi<b>1–2 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Mengamankan pekerjaan yang sudah ada dan menyiapkan disiplin rekayasa sebelum pengembangan lanjut.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Commit seluruh kode ke Git + buat <code>.gitignore</code> bersih (exclude <code>node_modules</code>, <code>.next</code>, model).</td><td>Repo bersih, riwayat awal tercatat, branch <code>main</code> + <code>develop</code>.</td></tr>
+        <tr><td>Standarisasi <code>.env.example</code>, dokumentasi setup (README jalankan lokal dalam 1 perintah).</td><td>Developer baru bisa <code>docker compose up</code> &lt; 15 menit.</td></tr>
+        <tr><td>Tangani 5 vuln <code>npm audit</code>; pin versi dependency.</td><td><code>npm audit</code> bersih (high/critical = 0).</td></tr>
+        <tr><td>Siapkan repo GitHub privat + papan tugas (issues/board).</td><td>Backlog 9 fase termuat sebagai epic.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">1</div><h3>Integrasi Data Nyata Penuh (Slice 2)</h3><div class="dur">Estimasi<b>3 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Menghapus seluruh mock — semua halaman membaca dari PostgreSQL.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Migrasi 5 halaman tersisa (dashboard, forecast, sentimen, analytics, geospatial) ke query DB nyata via pola <code>queries.ts</code> — semua pada <b>level nasional</b>.</td><td>0 pemanggilan mock di jalur produksi; fallback hanya untuk degradasi.</td></tr>
+        <tr><td>Isi tabel <code>inflation_index</code> (IHK umum/volatile/core) <b>nasional</b> dari BPS.</td><td>Gauge inflasi menampilkan angka nasional nyata.</td></tr>
+        <tr><td>Geospatial = layer <b>peta inflasi spasial historis</b> per-provinsi (data statis/snapshot), bukan feed langsung.</td><td>Peta menampilkan konteks inflasi provinsi periode lalu; tidak terhubung ke alert/forecast.</td></tr>
+        <tr><td>API route lengkap untuk tiap modul + caching Redis untuk agregat berat.</td><td>Load dashboard p95 &lt; 2 dtk terukur.</td></tr>
+        <tr><td>Tampilkan <i>data freshness</i> &amp; status sumber di UI.</td><td>Pengguna tahu kapan data terakhir diperbarui.</td></tr>
+      </table>
+      <p class="tag">Gotcha terdokumentasi: setelah ubah deps frontend, recreate container wajib <code>--renew-anon-volumes</code>.</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">2</div><h3>Pipeline Ingestion Produksi</h3><div class="dur">Estimasi<b>3 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Aliran data otomatis, andal, dan terpantau dari sumber resmi.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Validasi &amp; integrasi API resmi PIHPS (BI) &amp; BPS WebAPI level <b>nasional</b>; konfirmasi akses/kunci API.</td><td>Data harga &amp; IHK nasional masuk otomatis tiap hari (06:00).</td></tr>
+        <tr><td>Muat sekali data <b>inflasi spasial provinsi historis</b> (one-off / berkala manual) untuk layer peta.</td><td>Layer peta provinsi terisi; tidak masuk job harian.</td></tr>
+        <tr><td>Hardening scheduler: retry, dedup, idempotensi, penyimpanan data mentah → tabel ternormalisasi.</td><td>Job gagal otomatis di-retry; tidak ada duplikasi.</td></tr>
+        <tr><td>Logging &amp; alert kegagalan ingestion ke admin.</td><td>Uptime ingestion ≥ 95% job sukses; notifikasi saat gagal.</td></tr>
+        <tr><td>Validasi kualitas data (rentang, missing, outlier) sebelum commit ke DB.</td><td>Data anomali dikarantina, bukan langsung masuk.</td></tr>
+      </table>
+      <div class="note warn"><b>Risiko:</b> ketersediaan/legalitas akses API resmi. Mulai pengurusan akses & konfirmasi ToS sejak awal Fase 2 (lead time bisa panjang).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. FASE 3-5 ============ -->
+<div class="page">
+  <p class="kicker">Bagian 3 · Detail Fase (lanjutan)</p>
+  <h2>Fase 3–5 · Akurasi, Keamanan, Deployment</h2>
+
+  <div class="phase">
+    <div class="head"><div class="num">3</div><h3>Validasi &amp; Kalibrasi Model ML</h3><div class="dur">Estimasi<b>2–3 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Membuktikan model layak dipercaya untuk keputusan riil.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Backtesting forecast pada data historis <b>nasional</b> (SARIMA/LSTM/Hybrid).</td><td>MAPE ≤ 10% terverifikasi per komoditas volatile (level nasional).</td></tr>
+        <tr><td>Kalibrasi ambang EWS agar false-positive &lt; 30%; validasi lead time 3–7 hari.</td><td>Alert tidak "banjir"; lead time terbukti pada kasus historis.</td></tr>
+        <tr><td>Perbaiki bias sentiment (kasus "netral" untuk teks negatif); evaluasi pada set berlabel.</td><td>Akurasi sentiment ≥ 80% pada test set nasional.</td></tr>
+        <tr><td>Jadwal retraining + penyimpanan model (model registry sederhana / versi).</td><td>Model dapat diperbarui &amp; di-rollback; metrik tercatat.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">4</div><h3>Autentikasi, RBAC &amp; Audit</h3><div class="dur">Estimasi<b>2 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Akses terkendali sesuai peran institusi pemerintah.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Login (email/SSO instansi bila ada) + manajemen sesi aman.</td><td>Hanya pengguna terautentikasi yang dapat mengakses dashboard.</td></tr>
+        <tr><td>Peran: <b>admin</b> (kelola data/user), <b>analis TPID</b> (acknowledge/resolve alert), <b>viewer</b> (baca saja).</td><td>Hak akses per peran ditegakkan di backend, bukan hanya UI.</td></tr>
+        <tr><td>Audit log untuk perubahan status alert (<code>acknowledged_by</code>, timestamp) — sesuai US-A2.</td><td>Setiap aksi penting tercatat &amp; dapat ditelusuri.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">5</div><h3>Deployment &amp; Infrastruktur</h3><div class="dur">Estimasi<b>2–3 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Sistem menyala 24/7 di server, bukan laptop.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Pilih hosting (VPS/cloud lokal/on-prem instansi); siapkan environment <b>staging</b> + <b>production</b>.</td><td>2 environment terpisah; deploy dari Git.</td></tr>
+        <tr><td>Domain + HTTPS (TLS), reverse proxy, manajemen secret (bukan plaintext di compose).</td><td>Akses via domain ber-HTTPS; kredensial aman.</td></tr>
+        <tr><td>Backup DB harian + uji restore; volume model persisten.</td><td>Restore teruji; RPO ≤ 24 jam.</td></tr>
+        <tr><td>Monitoring (uptime, resource, error) + alert operasional.</td><td>Tim tahu sebelum pengguna saat ada gangguan.</td></tr>
+      </table>
+      <div class="note"><b>Catatan beban ML:</b> ML CPU-only (tensorflow-cpu + torch CPU). Pastikan spesifikasi server memadai untuk inferensi &amp; retraining; pertimbangkan menjadwalkan training di luar jam sibuk.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. FASE 6-8 ============ -->
+<div class="page">
+  <p class="kicker">Bagian 3 · Detail Fase (lanjutan)</p>
+  <h2>Fase 6–8 · Mutu, Pilot, dan Operasi</h2>
+
+  <div class="phase">
+    <div class="head"><div class="num">6</div><h3>QA &amp; Pengujian (paralel sejak F1)</h3><div class="dur">Estimasi<b>berjalan paralel</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Mencegah regresi &amp; menjamin kebenaran fungsional.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Unit test (query DB, util ML), integration test (API ↔ DB ↔ ML).</td><td>Cakupan jalur kritis; pipeline gagal bila test merah.</td></tr>
+        <tr><td>E2E test alur utama (lihat alert → acknowledge → resolve; lihat forecast).</td><td>Skenario pengguna inti otomatis tervalidasi.</td></tr>
+        <tr><td>CI/CD: jalankan test + build pada setiap PR.</td><td>Tidak ada merge tanpa lulus CI.</td></tr>
+        <tr><td>Audit aksesibilitas &amp; performa (load &lt; 2 dtk).</td><td>WCAG dasar terpenuhi; target performa tercapai.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">7</div><h3>Pilot &amp; UAT bersama Pemda/BI</h3><div class="dur">Estimasi<b>3 minggu</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Validasi nyata oleh pengguna sebelum go-live penuh.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Onboarding kelompok pilot (analis BI pusat + perwakilan TPID/pemda) di staging.</td><td>Akun pilot aktif; skenario uji level nasional disiapkan.</td></tr>
+        <tr><td>UAT terstruktur: deteksi dini, forecast, sentiment, acknowledge alert.</td><td>Daftar temuan terprioritas; kriteria lulus disepakati.</td></tr>
+        <tr><td>Pelatihan pengguna + manual + sesi tanya-jawab.</td><td>Pengguna mandiri menjalankan alur inti.</td></tr>
+        <tr><td>Kumpulkan umpan balik adopsi (target: ≥ 70% alert di-acknowledge).</td><td>Metrik adopsi awal terukur; perbaikan cepat dieksekusi.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="head"><div class="num">8</div><h3>Go-Live &amp; Operasional</h3><div class="dur">Estimasi<b>berkelanjutan</b></div></div>
+    <div class="body">
+      <p><b>Tujuan:</b> Rilis produksi &amp; pemeliharaan berkelanjutan.</p>
+      <table class="tight">
+        <tr><th style="width:50%">Aktivitas</th><th>Deliverable / Kriteria selesai</th></tr>
+        <tr><td>Rilis ke production + komunikasi peluncuran ke stakeholder.</td><td>Pengguna resmi mengakses sistem produksi.</td></tr>
+        <tr><td>Runbook operasional (insiden, restore, on-call) + jalur dukungan.</td><td>Tim operasi tahu langkah saat gangguan.</td></tr>
+        <tr><td>Pemantauan SLA, kalibrasi ulang model berkala, dan persiapan <b>Tahap 2: integrasi langsung per-provinsi</b> (feed harian provinsi, EWS/forecast per-provinsi).</td><td>Sistem nasional stabil; roadmap v2 (provinsi) disusun.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 6. RISIKO + SUMBER DAYA + CHECKLIST ============ -->
+<div class="page">
+  <p class="kicker">Bagian 4 · Penutup</p>
+  <h2>Risiko, Sumber Daya &amp; Checklist Go-Live</h2>
+
+  <h3>Risiko utama &amp; mitigasi</h3>
+  <table class="tight">
+    <tr><th style="width:34%">Risiko</th><th style="width:12%">Dampak</th><th>Mitigasi</th></tr>
+    <tr><td>Akses/legalitas API PIHPS-BPS &amp; scraping sosmed</td><td><span class="pill todo">Tinggi</span></td><td>Urus akses &amp; konfirmasi ToS sejak F0–F2; siapkan sumber alternatif.</td></tr>
+    <tr><td>Kualitas data sumber buruk → model meleset</td><td><span class="pill partial">Sedang</span></td><td>Validasi kualitas di F2; backtesting & kalibrasi di F3.</td></tr>
+    <tr><td>Banjir false-positive alert → pengguna kehilangan kepercayaan</td><td><span class="pill todo">Tinggi</span></td><td>Kalibrasi ambang (F3); target FP &lt; 30%; tuning saat UAT.</td></tr>
+    <tr><td>Beban inferensi/training ML di server non-GPU</td><td><span class="pill partial">Sedang</span></td><td>Spesifikasi server memadai; jadwalkan training off-peak; cache hasil.</td></tr>
+    <tr><td>Keterbatasan tim kecil</td><td><span class="pill partial">Sedang</span></td><td>Paralelkan fase independen; prioritaskan jalur kritis F0→F1→F2→F3→F7.</td></tr>
+  </table>
+
+  <h3>Kebutuhan sumber daya (indikatif)</h3>
+  <div class="grid2">
+    <div class="card"><h4>Tim</h4><ul>
+      <li>1 Full-stack / Frontend (Next.js)</li>
+      <li>1 ML / Data Engineer (FastAPI, model, ingestion)</li>
+      <li>1 DevOps (paruh waktu: deploy, infra, CI)</li>
+      <li>1 PO/koordinator UAT dengan TPID/BI</li></ul></div>
+    <div class="card"><h4>Infrastruktur</h4><ul>
+      <li>Server staging + production (CPU memadai untuk ML)</li>
+      <li>Domain + sertifikat TLS</li>
+      <li>Penyimpanan backup DB</li>
+      <li>Akses resmi API PIHPS &amp; BPS</li></ul></div>
+  </div>
+
+  <h3>Checklist Go-Live (gerbang akhir)</h3>
+  <table class="tight">
+    <tr><th style="width:55%">Item</th><th>Penanggung jawab</th></tr>
+    <tr><td>☐ Semua halaman baca data nyata; <code>inflation_index</code> terisi</td><td>Frontend / Data</td></tr>
+    <tr><td>☐ Ingestion harian sukses ≥ 95% selama ≥ 2 minggu berturut</td><td>Data Eng</td></tr>
+    <tr><td>☐ MAPE ≤ 10% &amp; sentiment ≥ 80% tervalidasi pada data nasional</td><td>ML</td></tr>
+    <tr><td>☐ Layer peta inflasi spasial provinsi (historis) tampil benar</td><td>Frontend / Data</td></tr>
+    <tr><td>☐ Auth + RBAC + audit log aktif &amp; teruji</td><td>Backend</td></tr>
+    <tr><td>☐ HTTPS, secret terkelola, backup harian teruji restore</td><td>DevOps</td></tr>
+    <tr><td>☐ CI hijau; E2E alur inti lulus</td><td>QA</td></tr>
+    <tr><td>☐ Monitoring &amp; alert operasional menyala</td><td>DevOps</td></tr>
+    <tr><td>☐ UAT lulus + manual pengguna &amp; runbook tersedia</td><td>PO</td></tr>
+    <tr><td>☐ Load dashboard p95 &lt; 2 dtk terukur di produksi</td><td>Frontend / DevOps</td></tr>
+  </table>
+
+  <div class="note"><b>Langkah berikut yang disarankan:</b> mulai dari <b>Fase 0</b> (commit kode — saat ini semua masih <i>untracked</i>) dan
+  paralel mengurus <b>akses API resmi PIHPS &amp; BPS</b>, karena lead time perizinan sering menjadi penghambat terlama.</div>
+</div>
+
+</body>
+</html>

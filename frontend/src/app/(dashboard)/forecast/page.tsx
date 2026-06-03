@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { mockMonthlyForecast, mockForecastResults } from '@/lib/mock-data'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { Loading } from '@/components/ui/loading'
 import { Badge } from '@/components/ui/badge'
 import { ChartFrame } from '@/components/charts/chart-frame'
 import {
@@ -11,7 +13,7 @@ import { Info, Calendar, Cpu } from 'lucide-react'
 
 type Metric = 'yoy' | 'mtm'
 
-const MODEL_COLORS = { SARIMA: '#6366f1', LSTM: '#f59e0b', Ensemble: '#ef4444' }
+const MODEL_COLORS = { SARIMA: '#6366f1', LSTM: '#f3c24b', Ensemble: '#e0584f' }
 
 const CustomTooltip = ({ active, payload, label, metric }: {
   active?: boolean; payload?: { name: string; color: string; value: number; dataKey: string }[];
@@ -40,10 +42,15 @@ export default function ForecastPage() {
   const [showCI, setShowCI]   = useState(true)
   const [showAll, setShowAll] = useState(false)
 
-  const displayData = showAll ? mockMonthlyForecast : mockMonthlyForecast.slice(-18)
-  const lastActual  = mockMonthlyForecast.filter(d => !d.is_forecast).at(-1)
+  const { data } = useQuery({ queryKey: ['forecast', 'latest'], queryFn: () => api.forecast.latest() })
+  if (!data) return <Loading label="Memuat hasil peramalan…" />
+
+  const monthly = data.monthly
+  const results = data.results
+  const displayData = showAll ? monthly : monthly.slice(-18)
+  const lastActual  = monthly.filter(d => !d.is_forecast).at(-1)
   const yoyLines = metric === 'yoy'
-  const forecastMeta = mockForecastResults.filter(r => r.component === 'umum')
+  const forecastMeta = results.filter(r => r.component === 'umum')
 
   return (
     <div className="space-y-5">
@@ -88,7 +95,7 @@ export default function ForecastPage() {
 
       {/* Komponen disagregasi */}
       <div className="grid grid-cols-4 gap-3">
-        {mockForecastResults.map(r => (
+        {results.map(r => (
           <div key={r.id} className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
             <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">{r.component}</p>
             <p className="font-mono text-lg font-bold text-gray-900">{r.predicted.toFixed(2)}<span className="text-xs text-gray-400">%</span></p>
@@ -141,12 +148,12 @@ export default function ForecastPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 9, fontFamily: 'JetBrains Mono', fill: '#9ca3af' }}
+                tick={{ fontSize: 9, fill: '#9ca3af' }}
                 tickLine={false} axisLine={{ stroke: '#e5e7eb' }}
                 interval={showAll ? 2 : 1}
               />
               <YAxis
-                tick={{ fontSize: 9, fontFamily: 'JetBrains Mono', fill: '#9ca3af' }}
+                tick={{ fontSize: 9, fill: '#9ca3af' }}
                 tickLine={false} axisLine={false}
                 tickFormatter={v => v.toFixed(1) + '%'}
                 domain={yoyLines ? [1.0, 5.5] : [-0.3, 1.2]}
@@ -157,14 +164,14 @@ export default function ForecastPage() {
               {/* Forecast region shading */}
               {showCI && yoyLines && (
                 <>
-                  <Area dataKey="yoy_ci_hi" name="ci_hi" fill="rgba(239,68,68,0.07)" stroke="none" connectNulls={false} />
-                  <Area dataKey="yoy_ci_lo" name="ci_lo" fill="rgba(239,68,68,0.07)" stroke="none" connectNulls={false} />
+                  <Area dataKey="yoy_ci_hi" name="ci_hi" fill="rgba(224,88,79,0.08)" stroke="none" connectNulls={false} />
+                  <Area dataKey="yoy_ci_lo" name="ci_lo" fill="rgba(224,88,79,0.08)" stroke="none" connectNulls={false} />
                 </>
               )}
               {showCI && !yoyLines && (
                 <>
-                  <Area dataKey="mtm_ci_hi" name="ci_hi" fill="rgba(239,68,68,0.07)" stroke="none" connectNulls={false} />
-                  <Area dataKey="mtm_ci_lo" name="ci_lo" fill="rgba(239,68,68,0.07)" stroke="none" connectNulls={false} />
+                  <Area dataKey="mtm_ci_hi" name="ci_hi" fill="rgba(224,88,79,0.08)" stroke="none" connectNulls={false} />
+                  <Area dataKey="mtm_ci_lo" name="ci_lo" fill="rgba(224,88,79,0.08)" stroke="none" connectNulls={false} />
                 </>
               )}
 
@@ -174,8 +181,8 @@ export default function ForecastPage() {
 
               {/* Actual */}
               {yoyLines
-                ? <Line dataKey="yoy_actual" name="Aktual" stroke="#22a05a" strokeWidth={2.5} dot={{ r: 2.5, fill: '#22a05a' }} connectNulls={false} />
-                : <Line dataKey="mtm_actual" name="Aktual" stroke="#22a05a" strokeWidth={2.5} dot={{ r: 2.5, fill: '#22a05a' }} connectNulls={false} />
+                ? <Line dataKey="yoy_actual" name="Aktual" stroke="#2bb37a" strokeWidth={2.5} dot={{ r: 2.5, fill: '#2bb37a' }} connectNulls={false} />
+                : <Line dataKey="mtm_actual" name="Aktual" stroke="#2bb37a" strokeWidth={2.5} dot={{ r: 2.5, fill: '#2bb37a' }} connectNulls={false} />
               }
 
               {/* Model forecasts (YoY only) */}
@@ -223,7 +230,7 @@ export default function ForecastPage() {
               </tr>
             </thead>
             <tbody>
-              {mockMonthlyForecast.slice(-12).map((row, i) => (
+              {monthly.slice(-12).map((row, i) => (
                 <tr key={i} className={`border-b border-gray-50 hover:bg-gray-50 ${row.is_forecast ? 'bg-red-50/30' : ''}`}>
                   <td className="px-4 py-2.5 font-mono font-semibold text-gray-700">
                     {row.month}

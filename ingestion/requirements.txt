@@ -1,0 +1,9 @@
+# Slim deps for the ETL scheduler image — no TensorFlow/Torch/transformers,
+# which the ingestion process never imports.
+httpx==0.27.0
+pandas==2.2.2
+numpy==1.26.4
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.30
+apscheduler==3.10.4
+python-dotenv==1.0.1

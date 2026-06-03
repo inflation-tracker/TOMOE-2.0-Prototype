@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
-import { mockForecastResults, mockForecastData } from '@/lib/mock-data'
+import { mockForecastResults, mockForecastData, mockMonthlyForecast } from '@/lib/mock-data'
+import type { ForecastResponse } from '@/types'
 
 export async function GET() {
-  return NextResponse.json({
+  const body: ForecastResponse = {
     results: mockForecastResults,
+    monthly: mockMonthlyForecast,
     chart_data: mockForecastData(14),
-  })
+  }
+  return NextResponse.json(body)
 }

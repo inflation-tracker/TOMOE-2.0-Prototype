@@ -43,7 +43,7 @@ CREATE TABLE commodity_prices (
     time            TIMESTAMPTZ NOT NULL,
     commodity_id    INTEGER REFERENCES commodities(id),
     market_id       INTEGER REFERENCES markets(id),
-    price           DECIMAL(12,2) NOT NULL,
+    price           DECIMAL(12,2) NOT NULL CHECK (price > 0),   -- DQ defense-in-depth
     price_change    DECIMAL(12,2),
     source          VARCHAR(50),
     PRIMARY KEY (time, commodity_id, market_id)
@@ -151,14 +151,16 @@ CREATE INDEX idx_ews_region ON ews_alerts (region_id, triggered_at DESC);
 -- ─── Domain E: Auth & Audit ────────────────────────────────────
 
 CREATE TABLE users (
-    id          SERIAL PRIMARY KEY,
-    email       VARCHAR(150) UNIQUE NOT NULL,
-    name        VARCHAR(100),
-    role        VARCHAR(30) DEFAULT 'viewer' CHECK (role IN ('admin', 'analyst', 'tpid', 'viewer')),
-    region_id   INTEGER REFERENCES regions(id),
-    is_active   BOOLEAN DEFAULT TRUE,
-    created_at  TIMESTAMPTZ DEFAULT now(),
-    last_login  TIMESTAMPTZ
+    id            SERIAL PRIMARY KEY,
+    email         VARCHAR(150) UNIQUE NOT NULL,
+    name          VARCHAR(100),
+    role          VARCHAR(30) DEFAULT 'viewer' CHECK (role IN ('admin', 'analyst', 'tpid', 'viewer')),
+    region_id     INTEGER REFERENCES regions(id),
+    -- PBKDF2-SHA256 hash: pbkdf2$sha256$<iters>$<salt_b64>$<key_b64>. Never store plaintext.
+    password_hash VARCHAR(255),
+    is_active     BOOLEAN DEFAULT TRUE,
+    created_at    TIMESTAMPTZ DEFAULT now(),
+    last_login    TIMESTAMPTZ
 );
 
 CREATE TABLE audit_logs (
@@ -174,3 +176,41 @@ CREATE TABLE audit_logs (
 
 CREATE INDEX idx_audit_user ON audit_logs (user_id, created_at DESC);
 CREATE INDEX idx_audit_entity ON audit_logs (entity, created_at DESC);
+
+-- ─── Domain F: TimescaleDB Lifecycle ───────────────────────────
+-- Without these, hypertables grow unbounded and "latest price" scans get
+-- slower forever. Compression shrinks old chunks; a continuous aggregate
+-- pre-computes the daily last price so the dashboard query is O(commodities)
+-- instead of a full hypertable scan.
+
+-- Columnar compression for chunks older than 30 days.
+ALTER TABLE commodity_prices SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'commodity_id, market_id',
+    timescaledb.compress_orderby   = 'time DESC'
+);
+SELECT add_compression_policy('commodity_prices', INTERVAL '30 days', if_not_exists => TRUE);
+
+-- Retention: keep 10 years of raw prices (generous for inflation history).
+SELECT add_retention_policy('commodity_prices', INTERVAL '10 years', if_not_exists => TRUE);
+
+-- Daily continuous aggregate: last price per commodity/market per day.
+-- NOTE: must run outside an explicit transaction block; the docker init runner
+-- executes statements individually so this is fine on a fresh DB.
+CREATE MATERIALIZED VIEW IF NOT EXISTS commodity_prices_daily
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 day', time) AS bucket,
+    commodity_id,
+    market_id,
+    last(price, time)        AS price,
+    last(price_change, time) AS price_change
+FROM commodity_prices
+GROUP BY bucket, commodity_id, market_id
+WITH NO DATA;
+
+SELECT add_continuous_aggregate_policy('commodity_prices_daily',
+    start_offset => INTERVAL '7 days',
+    end_offset   => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '1 hour',
+    if_not_exists => TRUE);

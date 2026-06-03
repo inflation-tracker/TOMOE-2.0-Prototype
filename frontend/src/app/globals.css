@@ -7,8 +7,8 @@
   --font-sans: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: var(--font-mono), 'JetBrains Mono', 'Fira Code', monospace;
 
-  --color-brand:      #dc2626;
-  --color-brand-soft: #fef2f2;
+  --color-brand:      #3266f0;
+  --color-brand-soft: #e9effe;
   --color-surface:    #ffffff;
   --color-bg:         #f8fafc;
   --color-border:     #e5e7eb;

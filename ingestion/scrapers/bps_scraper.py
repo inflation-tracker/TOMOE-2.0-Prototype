@@ -1,9 +1,12 @@
 """BPS WebAPI scraper — IHK dan inflasi resmi."""
+import os
 import httpx
 import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
+
+BPS_API_KEY = os.getenv("BPS_API_KEY", "")
 
 BPS_API_BASE = "https://webapi.bps.go.id/v1/api"
 DOMAIN_CODE = "7200"  # Sulawesi Tengah
@@ -18,8 +21,12 @@ BPS_VARS = {
 
 async def fetch_ihk_data(var_key: str = "ihk_umum", year: int = 2025) -> list[dict]:
     """Fetch IHK data from BPS WebAPI."""
+    if not BPS_API_KEY:
+        logger.warning("BPS_API_KEY not set; using mock IHK data.")
+        return _generate_mock_ihk(year)
+
     var_id = BPS_VARS.get(var_key, "6")
-    url = f"{BPS_API_BASE}/list/model/data/lang/ind/domain/{DOMAIN_CODE}/var/{var_id}/key/YOUR_BPS_API_KEY"
+    url = f"{BPS_API_BASE}/list/model/data/lang/ind/domain/{DOMAIN_CODE}/var/{var_id}/key/{BPS_API_KEY}"
 
     try:
         async with httpx.AsyncClient(timeout=30) as client:
@@ -40,12 +47,14 @@ async def fetch_ihk_data(var_key: str = "ihk_umum", year: int = 2025) -> list[di
             return records
 
     except Exception as e:
-        logger.warning(f"BPS fetch failed for {var_key}: {e}. Using mock data.")
-        return _generate_mock_ihk(year)
+        # Do NOT fabricate official inflation figures on failure — return empty
+        # and let the caller/alerting see the gap. Mock generation is test-only.
+        logger.error(f"BPS fetch failed for {var_key}: {e}; returning no records")
+        return []
 
 
 def _generate_mock_ihk(year: int) -> list[dict]:
-    """Generate 12-month mock IHK data."""
+    """TEST-ONLY mock IHK generator. Never called from the ingestion path."""
     import random
     records = []
     yoy = 2.5

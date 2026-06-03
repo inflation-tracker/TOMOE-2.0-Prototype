@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { provinsiNasional } from '@/lib/mock-data'
-import type { Provinsi } from '@/types'
+import { getGeospatialRegions } from '@/lib/queries'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const body: Provinsi[] = provinsiNasional
-  return NextResponse.json(body)
+  return NextResponse.json(await getGeospatialRegions())
 }

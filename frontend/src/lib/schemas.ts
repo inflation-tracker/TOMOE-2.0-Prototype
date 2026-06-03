@@ -131,10 +131,21 @@ export const sentimentTimelinePointSchema = z.object({
   positif: z.number(),
 })
 
+export const provinsiSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  lat: z.number(),
+  lng: z.number(),
+  yoy: z.number(),
+  mtm: z.number(),
+  risk: z.number(),
+})
+
 export const commodityPriceListSchema = z.array(commodityPriceSchema)
 export const ewsAlertListSchema = z.array(ewsAlertSchema)
 export const inflationDataListSchema = z.array(inflationDataSchema)
 export const groupInflationListSchema = z.array(groupInflationSchema)
+export const provinsiListSchema = z.array(provinsiSchema)
 export const sentimentSummaryListSchema = z.array(sentimentSummarySchema)
 export const sentimentScoreListSchema = z.array(sentimentScoreSchema)
 export const sentimentTimelineListSchema = z.array(sentimentTimelinePointSchema)

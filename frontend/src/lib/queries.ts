@@ -9,6 +9,7 @@ import {
   mockForecastResults,
   mockForecastData,
   mockMonthlyForecast,
+  provinsiNasional,
   mockSentimentSummary,
   mockSentimentFeed,
   mockSentimentTimeline,
@@ -19,6 +20,7 @@ import {
   forecastResponseSchema,
   groupInflationListSchema,
   inflationDataListSchema,
+  provinsiListSchema,
   sentimentScoreListSchema,
   sentimentSummaryListSchema,
   sentimentTimelineListSchema,
@@ -32,6 +34,7 @@ import type {
   GroupInflation,
   InflationData,
   MonthlyForecast,
+  Provinsi,
   SentimentResponse,
   SentimentScore,
   SentimentTimelinePoint,
@@ -496,5 +499,79 @@ export async function getSentimentTimeline(): Promise<SentimentTimelinePoint[]> 
   } catch (err) {
     console.error('[queries] getSentimentTimeline fell back to mock:', err)
     return mockSentimentTimeline
+  }
+}
+
+const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max)
+
+function scoreGeospatialRisk(yoy: number, mtm: number, activeAlerts: number): number {
+  const yoyScore = clamp(((yoy - 2) / 3) * 45, 0, 45)
+  const mtmScore = clamp((mtm / 1) * 30, 0, 30)
+  const alertScore = clamp(activeAlerts * 12, 0, 25)
+  return Math.round(clamp(25 + yoyScore + mtmScore + alertScore, 0, 100))
+}
+
+export async function getGeospatialRegions(): Promise<Provinsi[]> {
+  const pool = getPool()
+  if (!pool) return provinsiNasional
+
+  try {
+    const { rows } = await pool.query(`
+      WITH latest_inflation AS (
+        SELECT DISTINCT ON (ii.region_id)
+          ii.region_id,
+          ii.yoy,
+          ii.mtm
+        FROM inflation_index ii
+        WHERE ii.component = 'umum'
+        ORDER BY ii.region_id, ii.time DESC
+      ),
+      alert_counts AS (
+        SELECT
+          e.region_id,
+          COUNT(*) FILTER (WHERE e.status IN ('open', 'acknowledged')) AS active_alerts
+        FROM ews_alerts e
+        GROUP BY e.region_id
+      )
+      SELECT
+        r.code,
+        r.name,
+        r.latitude,
+        r.longitude,
+        COALESCE(li.yoy, 0) AS yoy,
+        COALESCE(li.mtm, 0) AS mtm,
+        COALESCE(ac.active_alerts, 0) AS active_alerts
+      FROM regions r
+      LEFT JOIN latest_inflation li ON li.region_id = r.id
+      LEFT JOIN alert_counts ac ON ac.region_id = r.id
+      WHERE r.latitude IS NOT NULL
+        AND r.longitude IS NOT NULL
+      ORDER BY active_alerts DESC, yoy DESC, r.name ASC
+    `)
+
+    if (rows.length === 0) return provinsiNasional
+
+    const mapped = rows.map((r): Provinsi => {
+      const yoy = num(r.yoy)
+      const mtm = num(r.mtm)
+      return {
+        code: String(r.code),
+        name: String(r.name),
+        lat: num(r.latitude),
+        lng: num(r.longitude),
+        yoy,
+        mtm,
+        risk: scoreGeospatialRisk(yoy, mtm, Number(r.active_alerts)),
+      }
+    })
+    const parsed = provinsiListSchema.safeParse(mapped)
+    if (!parsed.success) {
+      console.error('[queries] getGeospatialRegions shape drift:', parsed.error.issues)
+      return provinsiNasional
+    }
+    return parsed.data
+  } catch (err) {
+    console.error('[queries] getGeospatialRegions fell back to mock:', err)
+    return provinsiNasional
   }
 }

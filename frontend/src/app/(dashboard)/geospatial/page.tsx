@@ -50,7 +50,7 @@ export default function GeospatialPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">Peta Risiko Inflasi</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Distribusi tekanan inflasi 34 provinsi se-Indonesia — data nasional BPS + PIHPS
+            Distribusi spasial tekanan inflasi per wilayah — titik risiko dari data inflasi dan alert EWS
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -100,7 +100,7 @@ export default function GeospatialPage() {
               <div className="space-y-2">
                 {[
                   { label: 'Inflasi YoY', value: `${selected.yoy.toFixed(2)}%`, color: selected.yoy >= 3.5 ? 'text-red-600' : 'text-gray-800' },
-                  { label: 'Inflasi MtM', value: `+${selected.mtm.toFixed(2)}%`, color: 'text-gray-800' },
+                  { label: 'Inflasi MtM', value: `${selected.mtm >= 0 ? '+' : ''}${selected.mtm.toFixed(2)}%`, color: 'text-gray-800' },
                   { label: 'Risk Score',  value: `${selected.risk}/100`, color: selected.risk >= 80 ? 'text-red-600' : selected.risk >= 60 ? 'text-amber-600' : 'text-emerald-600' },
                 ].map(r => (
                   <div key={r.label} className="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
@@ -174,7 +174,7 @@ export default function GeospatialPage() {
                   <td className={`px-4 py-2 text-right font-mono font-bold ${p.yoy >= 3.5 ? 'text-red-600' : p.yoy >= 3.0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                     {p.yoy.toFixed(2)}%
                   </td>
-                  <td className="px-4 py-2 text-right font-mono text-gray-700">+{p.mtm.toFixed(2)}%</td>
+                  <td className="px-4 py-2 text-right font-mono text-gray-700">{p.mtm >= 0 ? '+' : ''}{p.mtm.toFixed(2)}%</td>
                   <td className="px-4 py-2 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <div className="h-1.5 w-16 rounded-full bg-gray-100 overflow-hidden">

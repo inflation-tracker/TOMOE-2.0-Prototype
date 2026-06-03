@@ -1,14 +1,12 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import type { Map as LeafletMap } from 'leaflet'
+import type { LayerGroup, Map as LeafletMap } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { provinsiNasional } from '@/lib/mock-data'
-
-type Province = typeof provinsiNasional[number]
+import type { Provinsi } from '@/types'
 
 interface IndonesiaMapProps {
-  data: Province[]
-  onSelect?: (prov: Province) => void
+  data: Provinsi[]
+  onSelect?: (prov: Provinsi) => void
   selected?: string | null
 }
 
@@ -23,11 +21,12 @@ function riskToRadius(risk: number): number {
   return 8 + (risk / 100) * 14
 }
 
-export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
+export function IndonesiaMap({ data, onSelect, selected }: IndonesiaMapProps) {
   const mapRef    = useRef<HTMLDivElement>(null)
   // Typed as the Leaflet Map (type-only import → erased, no SSR import) so
   // .remove() is callable without an `as any` cast.
   const mapObjRef = useRef<LeafletMap | null>(null)
+  const markersRef = useRef<LayerGroup | null>(null)
 
   useEffect(() => {
     if (!mapRef.current || mapObjRef.current) return
@@ -61,17 +60,38 @@ export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
       // Attribution small
       L.control.attribution({ prefix: false, position: 'bottomright' }).addTo(map)
 
-      // Province markers
+      markersRef.current = L.layerGroup().addTo(map)
+      mapObjRef.current = map
+    })
+
+    return () => {
+      if (mapObjRef.current) {
+        mapObjRef.current.remove()
+        mapObjRef.current = null
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!mapObjRef.current || !markersRef.current) return
+
+    import('leaflet').then(L => {
+      const layer = markersRef.current
+      if (!layer) return
+      layer.clearLayers()
+
       data.forEach(prov => {
-        const color  = riskToColor(prov.risk)
-        const radius = riskToRadius(prov.risk)
+        const color = riskToColor(prov.risk)
+        const isSelected = selected === prov.code
+        const radius = riskToRadius(prov.risk) + (isSelected ? 4 : 0)
 
         const circle = L.circleMarker([prov.lat, prov.lng], {
           radius,
           fillColor: color,
-          color: '#ffffff',
-          weight: 2,
-          fillOpacity: 0.82,
+          color: isSelected ? '#111827' : '#ffffff',
+          weight: isSelected ? 3 : 2,
+          fillOpacity: 0.84,
         })
 
         circle.bindTooltip(`
@@ -83,7 +103,7 @@ export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
             </div>
             <div style="display:flex; justify-content:space-between; gap:16px;">
               <span style="color:#6b7280">MtM</span>
-              <strong style="color:${color}">+${prov.mtm.toFixed(2)}%</strong>
+              <strong style="color:${color}">${prov.mtm >= 0 ? '+' : ''}${prov.mtm.toFixed(2)}%</strong>
             </div>
             <div style="display:flex; justify-content:space-between; gap:16px;">
               <span style="color:#6b7280">Risk</span>
@@ -98,21 +118,10 @@ export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
         })
 
         circle.on('click', () => onSelect?.(prov))
-
-        circle.addTo(map)
+        circle.addTo(layer)
       })
-
-      mapObjRef.current = map
     })
-
-    return () => {
-      if (mapObjRef.current) {
-        mapObjRef.current.remove()
-        mapObjRef.current = null
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [data, onSelect, selected])
 
   return (
     <>

@@ -159,9 +159,9 @@ Vercel hanya menjalankan Next.js. Komponen lain di-host terpisah:
 
 ## Catatan macOS / Colima
 
-Bila Docker via **Colima** (VM di SSD eksternal): set `COLIMA_HOME` dan pastikan SSD tercolok.
+Alternatif Docker Desktop di macOS — pakai **Colima**:
 ```bash
-export COLIMA_HOME="/Volumes/Rohis SSD/colima"
+brew install colima docker docker-compose
 colima start          # nyalakan VM dulu
 docker compose up -d
 ```

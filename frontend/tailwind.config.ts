@@ -11,13 +11,13 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // TOMOE brand green — matches landing.html (#28c26c) & PIHPS identity.
+        // TOMOE brand blue — soft-fintech primary per design/DESIGN.md (blue #3266f0).
         brand: {
-          50: "#f2fdf6",
-          100: "#e6f9ee",
-          500: "#28c26c",
-          600: "#22a05a",
-          700: "#1a7a42",
+          50: "#f3f6ff",
+          100: "#e9effe",
+          500: "#3266f0",
+          600: "#2a59d8",
+          700: "#1f47b5",
         },
       },
     },

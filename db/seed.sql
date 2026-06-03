@@ -44,11 +44,13 @@ INSERT INTO markets (name, region_id, source) VALUES
 ('Pasar Pagindar Donggala', (SELECT id FROM regions WHERE code='7205'), 'PIHPS');
 
 -- ─── Users ──────────────────────────────────────────────────────
-INSERT INTO users (email, name, role, region_id) VALUES
-('admin@bi.go.id', 'Admin BI Sulteng', 'admin', (SELECT id FROM regions WHERE code='7200')),
-('analyst@bi.go.id', 'Analis TPID Sulteng', 'analyst', (SELECT id FROM regions WHERE code='7271')),
-('tpid@sulteng.go.id', 'Koordinator TPID', 'tpid', (SELECT id FROM regions WHERE code='7200')),
-('viewer@opd.go.id', 'Staf OPD', 'viewer', (SELECT id FROM regions WHERE code='7271'))
+-- Demo password for every seeded account is "tomoe123" (PBKDF2-SHA256, 100k
+-- iters). CHANGE THIS before any real deployment.
+INSERT INTO users (email, name, role, region_id, password_hash) VALUES
+('admin@bi.go.id', 'Admin BI Sulteng', 'admin', (SELECT id FROM regions WHERE code='7200'), 'pbkdf2$sha256$100000$ChssPU5fYHGCk6S1xtfo+Q==$Qb6SCqOZ0ARhnFnttrPNrh05evkAHb9J6OUHdwePsBc='),
+('analyst@bi.go.id', 'Analis TPID Sulteng', 'analyst', (SELECT id FROM regions WHERE code='7271'), 'pbkdf2$sha256$100000$ChssPU5fYHGCk6S1xtfo+Q==$Qb6SCqOZ0ARhnFnttrPNrh05evkAHb9J6OUHdwePsBc='),
+('tpid@sulteng.go.id', 'Koordinator TPID', 'tpid', (SELECT id FROM regions WHERE code='7200'), 'pbkdf2$sha256$100000$ChssPU5fYHGCk6S1xtfo+Q==$Qb6SCqOZ0ARhnFnttrPNrh05evkAHb9J6OUHdwePsBc='),
+('viewer@opd.go.id', 'Staf OPD', 'viewer', (SELECT id FROM regions WHERE code='7271'), 'pbkdf2$sha256$100000$ChssPU5fYHGCk6S1xtfo+Q==$Qb6SCqOZ0ARhnFnttrPNrh05evkAHb9J6OUHdwePsBc=')
 ON CONFLICT (email) DO NOTHING;
 
 -- ─── Inflation Index (24 months of mock data) ───────────────────

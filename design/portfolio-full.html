@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOMOE 2.0 — Full Dashboard</title>
+<style>
+:root{
+  --page:#eef1f6;
+  --card:#ffffff;
+  --card-2:#f4f6fa;
+  --ink:#1b2330;
+  --ink-soft:#3a4252;
+  --muted:#7c8595;
+  --faint:#a7afbd;
+  --line:#e7eaf0;
+
+  --blue:#3266f0;
+  --blue-soft:#e9effe;
+  --up:#2bb37a;
+  --up-soft:#e3f5ec;
+  --down:#e0584f;
+  --down-soft:#fdebe9;
+  --yellow:#f3c24b;
+  --purple:#7b61ff;
+
+  --t-hero:clamp(44px,5.6vw,72px);
+  --shadow:0 24px 60px rgba(40,55,80,.10);
+  --shadow-sm:0 8px 24px rgba(40,55,80,.05);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono","Menlo","Consolas",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  min-height:100vh;background:var(--page);
+  color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1;
+  display:flex;flex-direction:column;
+}
+svg{display:block}
+button{font:inherit;cursor:pointer}
+.tnum{font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)}
+.wrap{width:100%;max-width:1640px;margin:0 auto;padding:0 clamp(18px,3vw,40px)}
+
+/* ───────── TOPBAR (sticky, full width) ───────── */
+.topbar{
+  position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line);
+}
+.topbar .wrap{display:flex;align-items:center;gap:16px;height:68px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:750;font-size:16px;letter-spacing:-.01em}
+.brand .mark{width:22px;height:22px;display:grid;place-items:center;color:var(--ink)}
+.brand .mark svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.6;fill:none}
+.navpill{margin:0 auto;display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;box-shadow:var(--shadow-sm)}
+.navpill a{text-decoration:none;color:var(--muted);font-weight:650;padding:8px 16px;border-radius:999px}
+.navpill a.on{background:var(--ink);color:#fff}
+.navpill .mkt{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-weight:650;padding:8px 14px;border-left:1px solid var(--line);margin-left:4px}
+.navpill .mkt svg{width:15px;height:15px;stroke:var(--muted);stroke-width:1.7;fill:none}
+.navpill .mkt b{font-weight:750}
+.t-actions{display:flex;align-items:center;gap:12px}
+.bell{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);box-shadow:var(--shadow-sm)}
+.bell svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.7;fill:none}
+.me{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ff8a5b,#ff5d73);display:grid;place-items:center;color:#fff;font:700 13px var(--font);box-shadow:var(--shadow-sm)}
+
+.scroll{flex:1;overflow:auto}
+
+/* ───────── HERO ───────── */
+.hero{padding:24px 0 18px;display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:28px;align-items:start}
+.crumb{display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.crumb .back{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.crumb .back svg{width:16px;height:16px;stroke:var(--ink);stroke-width:1.9;fill:none}
+.crumb b{color:var(--ink)}
+h1.hero-title{font-size:var(--t-hero);font-weight:350;letter-spacing:-.04em;line-height:.96;color:var(--ink)}
+.subports{display:flex;gap:18px;margin-top:24px;flex-wrap:wrap}
+.subport{min-width:240px;flex:1}
+.subport .lab{color:var(--muted);font-size:13px;margin-bottom:8px}
+.subport .lab b{color:var(--ink);font-weight:700;margin-left:6px}
+.blob{height:46px;border-radius:999px;background:var(--card-2);position:relative;overflow:hidden;display:flex;align-items:center}
+.blob i{height:34px;border-radius:999px;margin-left:auto;margin-right:6px}
+.blob .b1{width:46%;background:repeating-linear-gradient(135deg,#f08a82,#e0584f 10px,#ec6d64 11px)}
+.blob .b2{width:26%;background:repeating-linear-gradient(135deg,#f7d273,#f3c24b 10px,#f5ca5d 11px)}
+.blob .b3{width:30%;background:repeating-linear-gradient(135deg,#5b8cff,#3266f0 10px,#477bf5 11px)}
+
+.gauge{position:relative;height:230px}
+.gauge svg{width:100%;height:100%}
+.gauge .center{position:absolute;left:0;right:0;bottom:18px;text-align:center}
+.gauge .center .lab{color:var(--muted);font-size:13px}
+.gauge .center .big{font-size:42px;font-weight:700;letter-spacing:-.035em;margin-top:6px}
+.gauge .center .view{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;box-shadow:var(--shadow-sm)}
+.gauge .center .view svg{width:14px;height:14px;stroke:var(--ink);stroke-width:1.9;fill:none;display:inline}
+.ticker{position:absolute;top:0;right:0;display:flex;gap:26px}
+.tk .name{color:var(--muted);font-size:12px;margin-bottom:5px}
+.tk .row{display:flex;align-items:center;gap:8px}
+.tk .px{font-weight:750;font-size:15px;letter-spacing:-.01em}
+.tk .chip{font:700 11px var(--font);padding:2px 7px;border-radius:999px}
+.tk .chip.p{background:var(--up-soft);color:var(--up)}
+.tk .chip.n{background:var(--down-soft);color:var(--down)}
+
+/* ───────── PANELS ───────── */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow-sm)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-head .h{display:flex;align-items:center;gap:9px;font-weight:750;font-size:15px}
+.panel-head .h svg{width:17px;height:17px;stroke:var(--ink);stroke-width:1.8;fill:none}
+.round{width:34px;height:34px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.round svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.9;fill:none}
+.head-actions{display:flex;gap:8px}
+
+.row1{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px;align-items:stretch}
+.span8{grid-column:span 8}
+.span4{grid-column:span 4}
+.graph-flex{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:16px}
+.chart-box{position:relative}
+#candles{width:100%;height:300px}
+.tooltip{position:absolute;transform:translate(-50%,-115%);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:var(--shadow);text-align:center;pointer-events:none;white-space:nowrap}
+.tooltip .d{color:var(--muted);font-size:11px}
+.tooltip .v{font-weight:750;font-size:16px;letter-spacing:-.02em;margin-top:1px}
+.tooltip:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:11px;height:11px;background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--line);rotate:45deg}
+.x-axis{display:flex;justify-content:space-between;margin-top:6px;color:var(--faint);font-size:12px}
+.metrics{display:flex;flex-direction:column;gap:18px;padding-top:4px;border-left:1px solid var(--line);padding-left:16px}
+.metric .lab{color:var(--muted);font-size:13px}
+.metric .num{font-size:26px;font-weight:750;letter-spacing:-.03em;margin-top:2px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px;flex-wrap:wrap}
+.seg{display:flex;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:700;padding:7px 14px;border-radius:9px;font-size:13px}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.icons button{padding:7px 11px}
+.seg.icons svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none}
+
+.ai{display:flex;flex-direction:column}
+.ai .chat{flex:1;min-height:90px}
+.ai .bubble-me{margin-left:auto;background:var(--card-2);border:1px solid var(--line);border-radius:14px 14px 4px 14px;padding:9px 13px;font-weight:600;width:max-content;max-width:80%}
+.ai .bot{display:flex;gap:10px;margin-top:14px}
+.ai .bot .spark{width:26px;height:26px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto}
+.ai .bot .spark svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.9;fill:none}
+.ai .bot .txt b{font-weight:750}
+.ai .bot .txt ul{margin:6px 0 0 16px;color:var(--ink-soft)}
+.ai .bot .txt li{margin-top:3px}
+.ai .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
+.ai .tabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:650;padding:7px 13px;border-radius:999px;font-size:12px}
+.ai .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ai .input{display:flex;align-items:center;gap:10px;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 8px}
+.ai .input .plus{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--card)}
+.ai .input input{flex:1;border:0;background:transparent;outline:none;font:inherit;color:var(--ink)}
+.ai .input .mic{color:var(--muted)}
+.ai .input .mic svg,.ai .input .plus svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.8;fill:none}
+.ai .input .send{width:38px;height:38px;border-radius:50%;background:var(--blue);display:grid;place-items:center;color:#fff;border:0}
+.ai .input .send svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.9;fill:none}
+/* insight content */
+.ai .lead{font-size:14.5px;line-height:1.5;color:var(--ink-soft)}
+.ai .lead b{color:var(--ink);font-weight:750}
+.ai .finds{margin-top:16px;display:flex;flex-direction:column;gap:11px}
+.ai .find{display:flex;align-items:center;gap:11px;font-size:13px}
+.ai .find .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.ai .find b{font-weight:700}
+.ai .find i{margin-left:auto;color:var(--muted);font-style:normal;font-size:12px}
+.ai .meta{display:flex;align-items:center;gap:7px;color:var(--faint);font-size:11px;font-weight:600;margin:14px 0 12px}
+.ai .meta .live{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px var(--up-soft)}
+
+/* row 2 : 3 panel */
+.row2{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px;margin:18px 0 28px;align-items:stretch}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border-bottom:0}
+.tx .ic{width:36px;height:36px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.tx .ic svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none}
+.tx .info b{display:block;font-weight:700}
+.tx .info span{color:var(--muted);font-size:12px}
+.tx .amt{margin-left:auto;text-align:right}
+.tx .amt b{font-weight:750}
+.tx .amt span{display:block;color:var(--faint);font-size:11px}
+
+.spend .big{font-size:30px;font-weight:750;letter-spacing:-.03em}
+.spend .delta{float:right;text-align:right;color:var(--down);font-weight:700}
+.spend .delta span{display:block;color:var(--faint);font-weight:600;font-size:11px}
+.spend .bar{display:flex;gap:5px;margin-top:16px;height:12px}
+.spend .bar i{border-radius:6px}
+.spend .legend{display:flex;flex-direction:column;gap:9px;margin-top:14px;color:var(--muted);font-size:12px;font-weight:600}
+.spend .legend span{display:flex;align-items:center}
+.spend .legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px}
+.spend .legend b{margin-left:auto;color:var(--ink);font-weight:750}
+
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:0 0 10px}
+.tbl td{padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.tbl td:nth-child(n+2){text-align:right}
+.tag{display:inline-flex;justify-content:center;min-width:54px;padding:3px 8px;border-radius:999px;font:800 10px var(--font);letter-spacing:.04em}
+.tag.hot{background:var(--down-soft);color:var(--down)}
+.tag.warn{background:#fbf2da;color:#9a7400}
+.tag.ok{background:var(--up-soft);color:var(--up)}
+
+.footer{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font:600 12px var(--font);padding:8px 0 26px}
+
+@media(max-width:1080px){
+  .hero{grid-template-columns:1fr}
+  .ticker{position:static;margin-top:14px;flex-wrap:wrap}
+  .row1,.row2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .span8,.span4{grid-column:span 2}
+}
+@media(max-width:720px){
+  .navpill{display:none}
+  .graph-flex{grid-template-columns:1fr}
+  .metrics{flex-direction:row;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:14px;flex-wrap:wrap;gap:24px}
+  .row1,.row2{grid-template-columns:1fr}
+  .span8,.span4{grid-column:span 1}
+}
+</style>
+</head>
+<body>
+
+  <!-- topbar -->
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></span>TOMOE 2.0</div>
+      <nav class="navpill">
+        <a class="on">Dashboard</a>
+        <a>Analitik</a>
+        <a>Forecast</a>
+        <span class="mkt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Komoditas: <b>Cabai Rawit</b></span>
+      </nav>
+      <div class="t-actions">
+        <button class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9z"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <div class="me">RR</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="scroll">
+   <div class="wrap page">
+    <!-- hero -->
+    <section class="hero">
+      <div style="position:relative">
+        <div class="crumb">
+          <span class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>
+          Dashboard/<b>Inflasi Nasional</b>
+        </div>
+        <h1 class="hero-title">Inflasi Nasional</h1>
+        <div class="subports">
+          <div class="subport">
+            <div class="lab">Volatile Food <b class="down">/6,12%</b></div>
+            <div class="blob"><i class="b1"></i></div>
+          </div>
+          <div class="subport">
+            <div class="lab">Core &amp; Administered <b>/2,31% · 1,07%</b></div>
+            <div class="blob"><i class="b2"></i><i class="b3"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative">
+        <div class="ticker">
+          <div class="tk"><div class="name">Cabai Rawit</div><div class="row"><span class="px tnum">64.200</span><span class="chip p">+8%</span></div></div>
+          <div class="tk"><div class="name">Bawang Merah</div><div class="row"><span class="px tnum">38.900</span><span class="chip p">+8%</span></div></div>
+          <div class="tk"><div class="name">Beras</div><div class="row"><span class="px tnum">13.850</span><span class="chip n">−8%</span></div></div>
+        </div>
+        <div class="gauge" style="margin-top:78px">
+          <svg viewBox="0 0 420 230" preserveAspectRatio="xMidYMax meet">
+            <defs><linearGradient id="arcFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bcd3ff" stop-opacity="0"/></linearGradient></defs>
+            <path d="M30 210 A180 180 0 0 1 390 210 L390 210 L30 210 Z" fill="url(#arcFill)"/>
+            <path d="M30 210 A180 180 0 0 1 390 210" fill="none" stroke="#9cc0ff" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
+            <circle cx="30" cy="210" r="7" fill="#3266f0"/><circle cx="210" cy="30" r="7" fill="#3266f0"/>
+            <circle cx="332" cy="64" r="6" fill="#3266f0"/><circle cx="390" cy="210" r="7" fill="#9cc0ff"/>
+          </svg>
+          <div class="center">
+            <div class="lab">Inflasi Umum — YoY</div>
+            <div class="big tnum">2,84<span style="font-size:.5em;color:var(--muted)">%</span></div>
+            <a class="view">View <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- row 1 -->
+    <section class="row1">
+      <div class="panel span8">
+        <div class="panel-head">
+          <div class="h"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="13" y="7" width="3" height="10"/></svg>Grafik harga — Cabai Rawit</div>
+          <div class="head-actions">
+            <span class="round"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+            <span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </div>
+        </div>
+        <div class="graph-flex">
+          <div>
+            <div class="chart-box">
+              <svg id="candles" aria-label="Candlestick harga komoditas"></svg>
+              <div class="tooltip" id="tip"><div class="d">12 Mei 2026</div><div class="v tnum">Rp 64.200</div></div>
+            </div>
+            <div class="x-axis" id="xAxis"></div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><div class="lab">Akurasi (MAPE)</div><div class="num tnum">8,14%</div></div>
+            <div class="metric"><div class="lab">Lead time</div><div class="num tnum">5 hari</div></div>
+            <div class="metric"><div class="lab">Cakupan</div><div class="num tnum">34 prov</div></div>
+            <div class="metric"><div class="lab">Sinyal aktif</div><div class="num tnum">9</div></div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="seg icons" id="chartType">
+            <button title="Line chart"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 8-9"/></svg></button>
+            <button class="on" title="Candlestick"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="3" height="9"/><path d="M6.5 5v3M6.5 17v2"/><rect x="14" y="6" width="3" height="11"/><path d="M15.5 4v2M15.5 17v3"/></svg></button>
+          </div>
+          <div class="seg">
+            <button>Tahun</button><button class="on">Bulan</button><button>Minggu</button><button>Hari</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel ai span4">
+        <div class="panel-head">
+          <div class="h"><svg viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4M4 19h4"/><path d="M13 4l2.5 6.5L22 13l-6.5 2.5L13 22l-2.5-6.5L4 13l6.5-2.5z"/></svg>Insight otomatis</div>
+          <span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+        <div class="chat">
+          <p class="lead">Tekanan harga terkonsentrasi di <b>hortikultura</b>. Cabai rawit &amp; bawang merah jadi pendorong utama untuk horizon <b>5–14 hari</b>; pangan pokok relatif aman.</p>
+          <div class="finds">
+            <div class="find"><span class="dot" style="background:var(--down)"></span><b>Volatile food 6,12%</b><i>di atas sasaran</i></div>
+            <div class="find"><span class="dot" style="background:var(--down)"></span><b>2 sinyal HIGH aktif</b><i>cabai, bawang</i></div>
+            <div class="find"><span class="dot" style="background:var(--yellow)"></span><b>Sentimen negatif +180%</b><i>minyak goreng</i></div>
+            <div class="find"><span class="dot" style="background:var(--up)"></span><b>Inflasi umum 2,84%</b><i>dalam target BI</i></div>
+          </div>
+        </div>
+        <div class="meta"><span class="live"></span>Diperbarui 2 jam lalu · IndoBERT + Forecast Ensemble</div>
+        <div class="input">
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <input placeholder="Tanya soal data inflasi…">
+          <button class="send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- row 2 : 3 panel -->
+    <section class="row2">
+      <div class="panel span4">
+        <div class="panel-head"><div class="h"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M13 9l3 3-3 3"/></svg>Sinyal terbaru</div><span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
+        <div class="tx"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10l7-7 7 7"/></svg></span><div class="info"><b>Lonjakan 2σ — Cabai Rawit</b><span>nasional · 2 jam lalu</span></div><div class="amt"><b class="down">+11,3%</b><span>HIGH</span></div></div>
+        <div class="tx"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10l7-7 7 7"/></svg></span><div class="info"><b>Forecast breach — Bawang Merah</b><span>CI 90% · 3 hari</span></div><div class="amt"><b class="down">+7,8%</b><span>HIGH</span></div></div>
+        <div class="tx"><span class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-12 7L3 21l1.5-6A8 8 0 1 1 21 12z"/></svg></span><div class="info"><b>Sentiment spike — Minyak Goreng</b><span>dok negatif +180% · 48 jam</span></div><div class="amt"><b style="color:var(--yellow)">WATCH</b><span>medium</span></div></div>
+      </div>
+
+      <div class="panel span4">
+        <div class="panel-head"><div class="h"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 4-5"/></svg>Komoditas prioritas</div><span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
+        <table class="tbl">
+          <thead><tr><th>Nama</th><th>Harga</th><th>Δ</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Cabai Rawit</td><td>64.200</td><td class="down">+11,3</td><td><span class="tag hot">HIGH</span></td></tr>
+            <tr><td>Bawang Merah</td><td>38.900</td><td class="down">+7,8</td><td><span class="tag hot">HIGH</span></td></tr>
+            <tr><td>Telur Ayam</td><td>29.100</td><td style="color:var(--yellow)">+2,1</td><td><span class="tag warn">WATCH</span></td></tr>
+            <tr><td>Beras Medium</td><td>13.850</td><td class="up">−0,4</td><td><span class="tag ok">OK</span></td></tr>
+            <tr><td>Minyak Goreng</td><td>17.500</td><td style="color:var(--yellow)">+0,9</td><td><span class="tag warn">WATCH</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel spend span4">
+        <div class="panel-head"><div class="h"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Penyumbang inflasi</div><span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
+        <div><span class="delta">+0,12 pp<span>vs bulan lalu</span></span><div class="big tnum">2,84%</div></div>
+        <div class="bar">
+          <i style="width:46%;background:var(--blue)"></i>
+          <i style="width:22%;background:var(--yellow)"></i>
+          <i style="width:18%;background:var(--purple)"></i>
+          <i style="width:14%;background:#c2c9d6"></i>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--blue)"></i>Hortikultura <b>46%</b></span>
+          <span><i style="background:var(--yellow)"></i>Pangan pokok <b>22%</b></span>
+          <span><i style="background:var(--purple)"></i>Energi <b>18%</b></span>
+          <span><i style="background:#c2c9d6"></i>Lainnya <b>14%</b></span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>TOMOE 2.0 — Early Inflation Detection System</span>
+      <span>PIHPS BI / BPS / NLP IndoBERT / Forecast Ensemble</span>
+    </footer>
+   </div>
+  </div>
+
+<script>
+const months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul"];
+const seed=[3,1,-1,2,4,-2,1,3,-1,-3,2,5,4,-2,1,-1,3,2,-4,1,3,-2,2,4,1,-1,3,2];
+let p=50; const data=seed.map((d)=>{
+  const open=p, close=Math.max(40,open+d), high=Math.max(open,close)+1.4+Math.abs(d)*.3,
+        low=Math.min(open,close)-1.4-Math.abs(d)*.3; p=close;
+  return {open,high,low,close};
+});
+const all=data.flatMap(d=>[d.high,d.low]);
+const max=Math.max(...all)+1.5,min=Math.min(...all)-1.5;
+const HILITE=18;
+let mode="candle";
+
+// geometri pixel asli → grafik tidak melar di layar lebar
+function geom(svg){
+  const W=Math.max(320,Math.round(svg.clientWidth)), H=300, padT=16,padB=14,padL=10,padR=10;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.setAttribute("width",W); svg.setAttribute("height",H);
+  const n=data.length, slot=(W-padL-padR)/n;
+  return {W,H,padT,padB,padL,padR,n,slot,
+    x:i=>padL+slot*i+slot/2,
+    y:v=>padT+(max-v)/(max-min)*(H-padT-padB)};
+}
+function gridStr(g){
+  let s="";
+  for(let i=0;i<=4;i++){const yy=g.padT+i/4*(g.H-g.padT-g.padB);s+=`<line x1="${g.padL}" y1="${yy.toFixed(1)}" x2="${g.W-g.padR}" y2="${yy.toFixed(1)}" stroke="#dfe4ee" stroke-dasharray="4 6"/>`;}
+  for(let v=0;v<=6;v++){const xx=g.padL+v/6*(g.W-g.padL-g.padR);s+=`<line x1="${xx.toFixed(1)}" y1="${g.padT}" x2="${xx.toFixed(1)}" y2="${g.H-g.padB}" stroke="#e7ebf2" stroke-dasharray="4 6"/>`;}
+  return s;
+}
+function placeTip(hx,hy){
+  const tip=document.getElementById("tip");
+  tip.style.left=hx.toFixed(0)+"px"; tip.style.top=hy.toFixed(0)+"px";
+  document.getElementById("xAxis").innerHTML=months.map(m=>`<span>${m}</span>`).join("");
+}
+
+function drawCandle(){
+  const svg=document.getElementById("candles"), g=geom(svg), cw=Math.min(g.slot*0.55,15);
+  let s=gridStr(g), hx=0,hy=0;
+  data.forEach((d,i)=>{
+    const cx=g.x(i), up=d.close>=d.open, col=up?"var(--up)":"var(--down)";
+    const yo=g.y(d.open),yc=g.y(d.close),top=Math.min(yo,yc),bh=Math.max(2.5,Math.abs(yc-yo));
+    s+=`<line x1="${cx.toFixed(1)}" y1="${g.y(d.high).toFixed(1)}" x2="${cx.toFixed(1)}" y2="${g.y(d.low).toFixed(1)}" stroke="${col}" stroke-width="1.6"/>`;
+    s+=`<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${bh.toFixed(1)}" rx="2.5" fill="${col}"/>`;
+    if(i===HILITE){hx=cx;hy=g.y(d.high);s+=`<circle cx="${cx.toFixed(1)}" cy="${hy.toFixed(1)}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="2"/>`;}
+  });
+  svg.innerHTML=s; placeTip(hx,hy);
+}
+
+function drawLine(){
+  const svg=document.getElementById("candles"), g=geom(svg);
+  const pts=data.map((d,i)=>[g.x(i),g.y(d.close)]);
+  const line=pts.map((q,i)=>`${i?"L":"M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
+  const area=`${line} L${pts.at(-1)[0].toFixed(1)},${g.H-g.padB} L${pts[0][0].toFixed(1)},${g.H-g.padB} Z`;
+  let s=gridStr(g);
+  s+=`<defs><linearGradient id="lf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3266f0" stop-opacity=".18"/><stop offset="1" stop-color="#3266f0" stop-opacity="0"/></linearGradient></defs>`;
+  s+=`<path d="${area}" fill="url(#lf)"/>`;
+  s+=`<path d="${line}" fill="none" stroke="var(--blue)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const hx=pts[HILITE][0], hy=pts[HILITE][1];
+  s+=`<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="5" fill="#fff" stroke="var(--blue)" stroke-width="3"/>`;
+  svg.innerHTML=s; placeTip(hx,hy);
+}
+
+function render(){ mode==="line"?drawLine():drawCandle(); }
+render();
+let _rt; window.addEventListener("resize",()=>{clearTimeout(_rt);_rt=setTimeout(render,120);});
+document.querySelectorAll("#chartType button").forEach((b,i)=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("#chartType button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    mode = i===0 ? "line" : "candle";
+    render();
+  });
+});
+</script>
+</body>
+</html>

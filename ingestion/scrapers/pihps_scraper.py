@@ -24,7 +24,13 @@ REGION_CODE = "sulawesi-tengah"
 async def fetch_pihps_prices(target_date: date = None) -> list[dict]:
     """
     Fetch commodity prices from PIHPS BI for Sulawesi Tengah.
-    Returns list of price records.
+    Returns only successfully-fetched, parseable records.
+
+    On any per-commodity failure we log and SKIP — we never fabricate a price.
+    Synthetic data in an inflation early-warning pipeline can trigger or mask a
+    real alert, so mock generation lives in tests only (see _generate_mock_price).
+    The data-quality gate (ingestion.quality) drops anything malformed (e.g. a
+    price of 0 from an unparseable HTML response) before it reaches the DB.
     """
     target = target_date or date.today()
     records = []
@@ -38,27 +44,30 @@ async def fetch_pihps_prices(target_date: date = None) -> list[dict]:
                 resp = await client.get(url, params=params)
                 resp.raise_for_status()
 
-                # Parse response (PIHPS returns HTML/JSON depending on endpoint)
-                data = resp.json() if "json" in resp.headers.get("content-type", "") else {}
+                content_type = resp.headers.get("content-type", "")
+                if "json" not in content_type:
+                    # Real PIHPS returns HTML for this endpoint; an HTML parser is
+                    # still TODO, so skip rather than store a placeholder 0.
+                    logger.warning("Non-JSON response for %s; skipping until HTML parser lands", commodity_name)
+                    continue
+                data = resp.json()
 
                 records.append({
                     "date": target.isoformat(),
                     "commodity": commodity_name,
-                    "price": data.get("price", 0),
+                    "price": data.get("price"),
                     "unit": data.get("unit", "kg"),
                     "source": "PIHPS",
                     "region": REGION_CODE,
                 })
             except Exception as e:
-                logger.warning(f"Failed to fetch {commodity_name}: {e}")
-                # Generate mock data as fallback during development
-                records.append(_generate_mock_price(commodity_name, target))
+                logger.warning(f"Failed to fetch {commodity_name}: {e}; skipping")
 
     return records
 
 
 def _generate_mock_price(commodity: str, target_date: date) -> dict:
-    """Generate realistic mock price for development/testing."""
+    """TEST-ONLY mock price generator. Never called from the ingestion path."""
     import random
     base_prices = {
         "beras_premium": 14800, "cabai_merah": 55000,

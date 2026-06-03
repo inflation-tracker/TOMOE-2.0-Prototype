@@ -1,12 +1,26 @@
 """LSTM forecasting for commodity prices."""
+import os
+import random
 import numpy as np
 import pandas as pd
-from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
 SEQUENCE_LENGTH = 30
+RANDOM_SEED = 42
+
+
+def _set_seeds():
+    """Make training reproducible: same input → same forecast."""
+    os.environ["PYTHONHASHSEED"] = str(RANDOM_SEED)
+    random.seed(RANDOM_SEED)
+    np.random.seed(RANDOM_SEED)
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(RANDOM_SEED)
+    except Exception:
+        pass
 
 
 def prepare_sequences(data: np.ndarray, seq_len: int = SEQUENCE_LENGTH):
@@ -39,6 +53,13 @@ def forecast_lstm(series: pd.Series, steps: int = 30, epochs: int = 50) -> dict:
     try:
         from sklearn.preprocessing import MinMaxScaler
 
+        # Need at least one full sequence plus its target to train on.
+        if len(series) <= SEQUENCE_LENGTH:
+            raise ValueError(
+                f"LSTM needs more than {SEQUENCE_LENGTH} points, got {len(series)}"
+            )
+
+        _set_seeds()
         values = series.values.reshape(-1, 1)
         scaler = MinMaxScaler()
         scaled = scaler.fit_transform(values)
@@ -59,15 +80,20 @@ def forecast_lstm(series: pd.Series, steps: int = 30, epochs: int = 50) -> dict:
 
         predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten()
 
-        # Simple CI estimation using rolling std
-        std = float(series.rolling(12).std().mean())
+        # Confidence interval that WIDENS with the horizon. Recursive multi-step
+        # forecasting accumulates error, so a flat band understates uncertainty.
+        # We grow the band as sigma * sqrt(h), the random-walk error-propagation
+        # rule, where sigma is the 1-step residual scale (diff std).
+        sigma = float(np.nanstd(np.diff(series.values)))
+        horizon_scale = np.sqrt(np.arange(1, steps + 1))
+        margin = 1.96 * sigma * horizon_scale
         return {
             "model": "LSTM",
             "steps": steps,
             "predicted": predictions.tolist(),
-            "lower_bound": (predictions - 1.96 * std).tolist(),
-            "upper_bound": (predictions + 1.96 * std).tolist(),
-            "mape": None,  # would need val set
+            "lower_bound": (predictions - margin).tolist(),
+            "upper_bound": (predictions + margin).tolist(),
+            "mape": None,  # no holdout retrain here — ensemble/SARIMA carry MAPE
         }
     except Exception as e:
         logger.error(f"LSTM forecast failed: {e}")

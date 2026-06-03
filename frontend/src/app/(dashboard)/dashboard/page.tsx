@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic'
-import { mockDashboardSummary, mockEWSAlerts, mockMonthlyForecast } from '@/lib/mock-data'
+import { mockMonthlyForecast } from '@/lib/mock-data'
+import { getDashboardSummary, getEWSAlerts } from '@/lib/queries'
 import { KPICard } from '@/components/ui/kpi-card'
 import { Badge } from '@/components/ui/badge'
 import { AlertTriangle, Activity, MessageSquare, Calendar, ArrowRight, TrendingUp, Zap } from 'lucide-react'
@@ -12,8 +13,10 @@ const SentimentDonut = dynamic(() => import('@/components/charts/sentiment-donut
 export const metadata = { title: 'Dashboard — TOMOE 2.0' }
 
 export default async function DashboardPage() {
-  const s      = mockDashboardSummary
-  const alerts = mockEWSAlerts.filter(a => a.status === 'open')
+  // Single live source (DB + mock fallback) — same path as Early Warning &
+  // /api/dashboard, so KPI counters and the alert banner can't drift apart.
+  const [s, allAlerts] = await Promise.all([getDashboardSummary(), getEWSAlerts()])
+  const alerts = allAlerts.filter(a => a.status === 'open')
   const highAlerts = alerts.filter(a => a.severity === 'high')
 
   // Build forecast chart data from monthly forecast

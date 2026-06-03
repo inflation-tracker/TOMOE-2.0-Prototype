@@ -12,10 +12,10 @@ interface IndonesiaMapProps {
 }
 
 function riskToColor(risk: number): string {
-  if (risk >= 80) return '#ef4444'
+  if (risk >= 80) return '#e0584f'
   if (risk >= 65) return '#f97316'
-  if (risk >= 50) return '#f59e0b'
-  return '#22a05a'
+  if (risk >= 50) return '#f3c24b'
+  return '#2bb37a'
 }
 
 function riskToRadius(risk: number): number {

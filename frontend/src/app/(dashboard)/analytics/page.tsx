@@ -1,13 +1,19 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { mockInflationHistory, mockGroupInflation } from '@/lib/mock-data'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { Loading } from '@/components/ui/loading'
 
 const InflationLineChart = dynamic(() => import('@/components/charts/line-chart').then(m => m.InflationLineChart), { ssr: false })
 const TomoeBarChart      = dynamic(() => import('@/components/charts/bar-chart').then(m => m.TomoeBarChart), { ssr: false })
 
 export default function AnalyticsPage() {
-  const umuHistory      = mockInflationHistory.filter(d => d.component === 'umum').slice(-12)
-  const volatileHistory = mockInflationHistory.filter(d => d.component === 'volatile').slice(-12)
+  const { data: history } = useQuery({ queryKey: ['inflation', 'history'], queryFn: () => api.inflation.history() })
+  const { data: groups }  = useQuery({ queryKey: ['inflation', 'groups'],  queryFn: () => api.inflation.groups() })
+  if (!history || !groups) return <Loading />
+
+  const umuHistory      = history.filter(d => d.component === 'umum').slice(-12)
+  const volatileHistory = history.filter(d => d.component === 'volatile').slice(-12)
 
   const lineData = umuHistory.map((d, i) => ({
     time: d.time.slice(5, 7) + '/' + d.time.slice(2, 4),
@@ -15,7 +21,7 @@ export default function AnalyticsPage() {
     volatile: volatileHistory[i]?.yoy ?? null,
   }))
 
-  const andilData = mockGroupInflation
+  const andilData = [...groups]
     .sort((a, b) => Math.abs(b.andil) - Math.abs(a.andil))
     .slice(0, 7)
     .map(g => ({ group: g.group.split(',')[0].trim(), andil: g.andil }))
@@ -52,8 +58,8 @@ export default function AnalyticsPage() {
             <InflationLineChart
               data={lineData}
               lines={[
-                { key: 'umum',     label: 'Inflasi Umum', color: '#22a05a' },
-                { key: 'volatile', label: 'Volatile Food', color: '#ef4444' },
+                { key: 'umum',     label: 'Inflasi Umum', color: '#3266f0' },
+                { key: 'volatile', label: 'Volatile Food', color: '#e0584f' },
               ]}
               xKey="time"
             />
@@ -70,7 +76,7 @@ export default function AnalyticsPage() {
               yKey="andil"
               label="Andil"
               yFormatter={v => v.toFixed(2) + '%'}
-              colorFn={v => v >= 0 ? 'rgba(239,68,68,0.75)' : 'rgba(34,160,90,0.75)'}
+              colorFn={v => v >= 0 ? 'rgba(224,88,79,0.75)' : 'rgba(43,179,122,0.75)'}
             />
           </div>
         </div>
@@ -92,7 +98,7 @@ export default function AnalyticsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockGroupInflation.map((g, i) => (
+              {groups.map((g, i) => (
                 <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                   <td className="px-4 py-2.5 text-gray-700 font-medium">{g.group}</td>
                   <td className={`px-4 py-2.5 text-right font-mono font-semibold ${g.mtm >= 0 ? 'text-red-600' : 'text-emerald-600'}`}>

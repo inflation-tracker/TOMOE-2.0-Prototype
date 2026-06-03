@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOMOE 2.0 — Eclipse Dashboard</title>
+<style>
+:root{
+  --bg:#f4f5f7;
+  --surface:#ffffff;
+  --surface-2:#f7f8fa;
+  --ink:#0f1115;
+  --muted:#6b7280;
+  --faint:#9aa1ac;
+  --line:#e8eaed;
+  --line-2:#eef0f3;
+
+  --blue:#2f6bff;
+  --blue-soft:#eaf0ff;
+  --red:#f0483e;
+  --red-soft:#ffeceb;
+  --green:#18a957;
+  --green-soft:#e7f7ee;
+  --amber:#d99a00;
+  --amber-soft:#fbf2da;
+
+  --candle-up:#2f6bff;
+  --candle-down:#f0483e;
+
+  --shadow:0 18px 50px rgba(20,30,55,.07);
+  --shadow-sm:0 8px 24px rgba(20,30,55,.05);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono","Menlo","Consolas",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:"tnum" 1;
+}
+svg{display:block}
+button{font:inherit;cursor:pointer}
+.tnum{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono)}
+.up{color:var(--green)} .down{color:var(--red)}
+
+.shell{display:grid;grid-template-columns:64px minmax(0,1fr);min-height:100vh}
+
+/* ───────── ICON RAIL ───────── */
+.rail{
+  background:var(--surface);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;
+  padding:18px 0;gap:6px;
+}
+.rail .logo{
+  width:36px;height:36px;border-radius:11px;
+  background:linear-gradient(135deg,#1b1f2a,#3a4150);
+  display:grid;place-items:center;margin-bottom:14px;
+}
+.rail .logo i{width:13px;height:13px;background:#fff;transform:rotate(45deg);border-radius:3px;display:block}
+.rail a{
+  width:42px;height:42px;border-radius:12px;
+  display:grid;place-items:center;color:var(--faint);
+  text-decoration:none;position:relative;
+}
+.rail a:hover{background:var(--surface-2);color:var(--ink)}
+.rail a.on{background:var(--ink);color:#fff}
+.rail a svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.8;fill:none}
+.rail .dots{margin-top:14px;display:grid;gap:8px}
+.rail .dots i{width:7px;height:7px;border-radius:50%;display:block}
+.rail .avatars{margin-top:auto;display:grid;gap:-6px}
+.rail .avatars b{
+  width:32px;height:32px;border-radius:50%;border:2px solid var(--surface);
+  display:grid;place-items:center;color:#fff;font:700 11px var(--mono);margin-top:-6px;
+}
+.rail .avatars b:first-child{margin-top:0}
+
+/* ───────── MAIN ───────── */
+.main{min-width:0;display:flex;flex-direction:column}
+
+.topbar{
+  height:66px;flex:0 0 auto;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;border-bottom:1px solid var(--line);
+  background:var(--surface);
+}
+.wordmark{font-size:17px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.wordmark em{font-style:normal;color:var(--blue)}
+.search{
+  display:flex;align-items:center;gap:9px;height:38px;
+  background:var(--surface-2);border:1px solid var(--line);
+  border-radius:11px;padding:0 13px;color:var(--faint);
+  width:230px;
+}
+.search svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none}
+.search input{border:0;background:transparent;outline:none;font:inherit;color:var(--ink);width:100%}
+.tnav{display:flex;gap:6px;margin:0 6px}
+.tnav a{
+  text-decoration:none;color:var(--muted);font-weight:650;
+  padding:8px 13px;border-radius:9px;
+}
+.tnav a.on{background:var(--blue-soft);color:var(--blue)}
+.tnav a:hover:not(.on){background:var(--surface-2);color:var(--ink)}
+.spacer{flex:1}
+.iconbtn{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+  background:var(--surface);display:grid;place-items:center;color:var(--muted);position:relative;
+}
+.iconbtn svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none}
+.iconbtn .badge{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--red);border:2px solid var(--surface)}
+.profile{display:flex;align-items:center;gap:10px;padding-left:6px}
+.profile .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#6d5efc,#a06bff);display:grid;place-items:center;color:#fff;font:700 13px var(--mono)}
+.profile .who b{display:block;font-size:13px;line-height:1.1}
+.profile .who span{color:var(--muted);font-size:11px}
+
+.content{padding:24px;display:flex;flex-direction:column;gap:18px}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-head h1{font-size:30px;letter-spacing:-.03em}
+.page-head p{color:var(--muted);font-size:13px;margin-top:3px}
+.actions{display:flex;gap:10px}
+.btn{height:40px;border:0;border-radius:11px;padding:0 18px;font-weight:750;color:#fff}
+.btn.buy{background:var(--blue)}
+.btn.sell{background:var(--red)}
+
+/* chart panel */
+.chart-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:22px;
+}
+.stat-row{display:flex;align-items:flex-start;gap:34px;flex-wrap:wrap;margin-bottom:6px}
+.stat-main .lbl,.stat .lbl{color:var(--muted);font-size:12px;font-weight:600}
+.stat-main .val{font-size:42px;font-weight:800;letter-spacing:-.035em;line-height:1;margin-top:6px}
+.stat-main .val small{font-size:.4em;color:var(--muted);font-weight:700;letter-spacing:-.02em}
+.stat{padding-top:2px}
+.stat .val{font-size:19px;font-weight:780;letter-spacing:-.02em;margin-top:8px}
+.stat .pct{font-size:12px;font-weight:700;margin-top:2px}
+.stat-spacer{flex:1}
+
+.range{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.range .seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:3px}
+.range .seg button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:12px;padding:7px 12px;border-radius:8px}
+.range .seg button.on{background:var(--ink);color:#fff}
+.range .drop,.range .filt{
+  height:38px;border:1px solid var(--line);background:var(--surface);border-radius:11px;
+  display:flex;align-items:center;gap:7px;padding:0 12px;color:var(--muted);font-weight:700;font-size:12px;
+}
+.range .filt{width:40px;justify-content:center;padding:0}
+.range svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none}
+
+.chart-wrap{margin-top:18px}
+#candles{width:100%;height:300px}
+.cx-axis{display:flex;justify-content:space-between;margin-top:8px;padding:0 4px;color:var(--faint);font:700 11px var(--mono)}
+
+/* lower grid */
+.lower{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,.85fr);gap:18px;align-items:start}
+.col-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.col-title h3{font-size:17px;letter-spacing:-.02em}
+.col-title a{color:var(--blue);font-weight:700;font-size:12px;text-decoration:none}
+
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow-sm)}
+.scard .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px}
+.scard .ico svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.9;fill:none}
+.scard .ico.g{background:var(--green-soft);color:var(--green)}
+.scard .ico.v{background:#f0ecff;color:#6d5efc}
+.scard .ico.r{background:var(--red-soft);color:var(--red)}
+.scard .name{color:var(--muted);font-size:12px;font-weight:600}
+.scard .num{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-top:4px}
+.scard .foot{margin-top:8px;font-size:12px;font-weight:700;display:flex;gap:8px;align-items:center}
+.scard .foot span{color:var(--faint);font-weight:600}
+
+.cards{display:grid;gap:14px}
+.gcard{
+  border-radius:18px;padding:18px 20px;color:#fff;position:relative;overflow:hidden;
+  min-height:172px;display:flex;flex-direction:column;box-shadow:var(--shadow);
+}
+.gcard.violet{background:linear-gradient(135deg,#6d5efc,#a06bff)}
+.gcard.sunset{background:linear-gradient(135deg,#ff7a45,#ff4d6d)}
+.gcard:after{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12)}
+.gcard .top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.gcard .top .lab{font-size:12px;opacity:.85;font-weight:600}
+.gcard .top .bal{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:4px}
+.gcard .top .visa{font:800 16px var(--mono);letter-spacing:.06em;opacity:.95}
+.gcard .chip{width:34px;height:25px;border-radius:6px;background:rgba(255,255,255,.35);margin-top:14px;position:relative;z-index:1}
+.gcard .row{margin-top:auto;display:flex;gap:26px;position:relative;z-index:1}
+.gcard .row div span{display:block;font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.08em}
+.gcard .row div b{font:700 13px var(--mono);letter-spacing:.04em}
+
+.footer{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font:700 11px var(--mono);padding-top:6px}
+
+@media(max-width:1080px){
+  .lower{grid-template-columns:1fr}
+  .tnav,.search{display:none}
+}
+@media(max-width:680px){
+  .shell{grid-template-columns:1fr}
+  .rail{flex-direction:row;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 14px;overflow-x:auto}
+  .rail .logo{margin-bottom:0}
+  .rail .avatars{margin-left:auto;display:flex}
+  .rail .avatars b{margin-top:0;margin-left:-6px}
+  .profile .who{display:none}
+  .summary{grid-template-columns:1fr}
+  .stat-row{gap:18px}
+  .page-head h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- icon rail -->
+  <aside class="rail">
+    <div class="logo"><i></i></div>
+    <a class="on" title="Dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>
+    <a title="Forecast"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 8-9"/></svg></a>
+    <a title="Early Warning"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></a>
+    <a title="Sentimen"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.3L3 21l1.2-4.5A8.4 8.4 0 1 1 21 11.5z"/></svg></a>
+    <a title="Spasial"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></a>
+    <div class="dots">
+      <i style="background:var(--green)"></i>
+      <i style="background:var(--amber)"></i>
+      <i style="background:var(--red)"></i>
+    </div>
+    <div class="avatars">
+      <b style="background:#6d5efc">AN</b>
+      <b style="background:#18a957">BP</b>
+      <b style="background:#ff7a45">RS</b>
+    </div>
+  </aside>
+
+  <div class="main">
+    <!-- topbar -->
+    <header class="topbar">
+      <div class="wordmark">TOMOE<em>2.0</em></div>
+      <label class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input placeholder="Cari komoditas, provinsi…">
+      </label>
+      <nav class="tnav">
+        <a class="on">Dashboard</a>
+        <a>Operations</a>
+        <a>Analytics</a>
+        <a>Komoditas</a>
+      </nav>
+      <div class="spacer"></div>
+      <button class="iconbtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.3 1a7 7 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-1.7 1l-2.3-1-2 3.5 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.3 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg></button>
+      <button class="iconbtn"><span class="badge"></span><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9z"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+      <div class="profile">
+        <div class="av">RR</div>
+        <div class="who"><b>Rohis Rachman</b><span>Macro Analyst</span></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- page head -->
+      <div class="page-head">
+        <div>
+          <h1>Dashboard</h1>
+          <p>National Inflation Early Detection — pantau tekanan harga, risiko wilayah, dan narasi publik.</p>
+        </div>
+        <div class="actions">
+          <button class="btn buy">Tambah Sinyal</button>
+          <button class="btn sell">Set Alert</button>
+        </div>
+      </div>
+
+      <!-- chart card -->
+      <section class="chart-card">
+        <div class="stat-row">
+          <div class="stat-main">
+            <div class="lbl">Indeks Harga Pangan — komposit</div>
+            <div class="val tnum">203.401<small> idx</small></div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Inflasi YoY</div>
+            <div class="val tnum up">2,84%</div>
+            <div class="pct up">+0,12 pp</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Volatile Food</div>
+            <div class="val tnum down">6,12%</div>
+            <div class="pct down">−1,3% mtm</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Core</div>
+            <div class="val tnum">2,31%</div>
+            <div class="pct up">+0,04 pp</div>
+          </div>
+          <div class="stat-spacer"></div>
+          <div class="range">
+            <div class="seg">
+              <button>1M</button>
+              <button>1B</button>
+              <button class="on">3B</button>
+              <button>YTD</button>
+              <button>1T</button>
+            </div>
+            <div class="drop">Populer
+              <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="filt"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v5l-4 2v-7z"/></svg></div>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="candles" viewBox="0 0 960 300" preserveAspectRatio="none" aria-label="Candlestick harga Cabai Rawit"></svg>
+          <div class="cx-axis" id="cxAxis"></div>
+        </div>
+      </section>
+
+      <!-- lower -->
+      <section class="lower">
+        <div>
+          <div class="col-title"><h3>Ringkasan komponen</h3><a href="#">Lihat detail</a></div>
+          <div class="summary">
+            <div class="scard">
+              <div class="ico g"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 8-9"/></svg></div>
+              <div class="name">Volatile Food</div>
+              <div class="num tnum">6,12%</div>
+              <div class="foot"><b class="down">−1,3%</b><span>vs bulan lalu</span></div>
+            </div>
+            <div class="scard">
+              <div class="ico v"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <div class="name">Core</div>
+              <div class="num tnum">2,31%</div>
+              <div class="foot"><b class="up">+0,04 pp</b><span>stabil</span></div>
+            </div>
+            <div class="scard">
+              <div class="ico r"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/></svg></div>
+              <div class="name">Administered</div>
+              <div class="num tnum">1,07%</div>
+              <div class="foot"><b class="up">+0,9%</b><span>BBM & tarif</span></div>
+            </div>
+          </div>
+
+          <div class="col-title" style="margin-top:22px"><h3>Komoditas prioritas</h3><a href="#">Semua</a></div>
+          <div class="summary" style="grid-template-columns:repeat(2,1fr)">
+            <div class="scard">
+              <div class="name">Cabai Rawit Merah</div>
+              <div class="num tnum">Rp 64.200</div>
+              <div class="foot"><b class="down">+11,3%</b><span>sinyal HIGH</span></div>
+            </div>
+            <div class="scard">
+              <div class="name">Bawang Merah</div>
+              <div class="num tnum">Rp 38.900</div>
+              <div class="foot"><b class="down">+7,8%</b><span>sinyal HIGH</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="col-title"><h3>Kartu pemantauan</h3><a href="#">Atur</a></div>
+          <div class="cards">
+            <div class="gcard violet">
+              <div class="top">
+                <div><div class="lab">Indeks Sentimen Publik</div><div class="bal tnum">+1,8σ</div></div>
+                <div class="visa">NLP</div>
+              </div>
+              <div class="chip"></div>
+              <div class="row">
+                <div><span>Sumber</span><b>1.234 dok</b></div>
+                <div><span>Tren 48j</span><b>+180%</b></div>
+                <div><span>Model</span><b>IndoBERT</b></div>
+              </div>
+            </div>
+            <div class="gcard sunset">
+              <div class="top">
+                <div><div class="lab">Risiko Wilayah Tertinggi</div><div class="bal">Sulteng</div></div>
+                <div class="visa">GEO</div>
+              </div>
+              <div class="chip"></div>
+              <div class="row">
+                <div><span>Skor</span><b>4,9 / 5</b></div>
+                <div><span>Lead time</span><b>5 hari</b></div>
+                <div><span>Provinsi</span><b>34</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>TOMOE 2.0 — Early Inflation Detection System</span>
+        <span>PIHPS BI / BPS / NLP IndoBERT / Forecast Ensemble</span>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script>
+(function drawCandles(){
+  // OHLC harga Cabai Rawit (12 bulan) — open, high, low, close
+  const months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  let price=42, rng=Math.sin;
+  const data=months.map((m,i)=>{
+    const open=price;
+    const drift=(Math.sin(i*1.1)+ (i>7?1.2:0))*2.2;
+    const close=Math.max(28, open+drift+(i%2?2.1:-1.4));
+    const high=Math.max(open,close)+2+Math.abs(Math.cos(i))*2.5;
+    const low=Math.min(open,close)-2-Math.abs(Math.sin(i*1.7))*2.5;
+    price=close;
+    return {open,high,low,close,vol:40+Math.abs(Math.sin(i*1.3))*60};
+  });
+
+  const W=960,H=300, padT=14, candleH=220, gap=18, volTop=candleH+18, volH=H-volTop-4;
+  const all=data.flatMap(d=>[d.high,d.low]);
+  const max=Math.max(...all)+2, min=Math.min(...all)-2;
+  const maxVol=Math.max(...data.map(d=>d.vol));
+  const n=data.length;
+  const slot=(W-gap*2)/n;
+  const cw=slot*0.46;
+  const y=v=>padT+(max-v)/(max-min)*(candleH-padT);
+
+  let s="";
+  // gridlines candle area
+  for(let g=0;g<=4;g++){
+    const yy=padT+g/4*(candleH-padT);
+    s+=`<line x1="0" y1="${yy.toFixed(1)}" x2="${W}" y2="${yy.toFixed(1)}" stroke="rgba(15,17,21,.05)"/>`;
+  }
+  data.forEach((d,i)=>{
+    const cx=gap+slot*i+slot/2;
+    const up=d.close>=d.open;
+    const col=up?"var(--candle-up)":"var(--candle-down)";
+    const yo=y(d.open), yc=y(d.close);
+    const top=Math.min(yo,yc), bh=Math.max(2,Math.abs(yc-yo));
+    // wick
+    s+=`<line x1="${cx}" y1="${y(d.high).toFixed(1)}" x2="${cx}" y2="${y(d.low).toFixed(1)}" stroke="${col}" stroke-width="1.6"/>`;
+    // body
+    s+=`<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="${col}"/>`;
+    // volume bar
+    const vh=Math.max(3,d.vol/maxVol*volH);
+    s+=`<rect x="${(cx-cw/2).toFixed(1)}" y="${(volTop+volH-vh).toFixed(1)}" width="${cw.toFixed(1)}" height="${vh.toFixed(1)}" rx="2" fill="${up?'rgba(47,107,255,.28)':'rgba(240,72,62,.28)'}"/>`;
+  });
+  // last price line
+  const lastY=y(data.at(-1).close);
+  s+=`<line x1="0" y1="${lastY.toFixed(1)}" x2="${W}" y2="${lastY.toFixed(1)}" stroke="rgba(15,17,21,.22)" stroke-dasharray="5 6"/>`;
+  document.getElementById("candles").innerHTML=s;
+  document.getElementById("cxAxis").innerHTML=months.map(m=>`<span>${m}</span>`).join("");
+})();
+</script>
+</body>
+</html>

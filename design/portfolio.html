@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOMOE 2.0 — CashPanel Dashboard</title>
+<style>
+:root{
+  /* surface */
+  --page:#d7dde6;
+  --app:#eef1f6;
+  --card:#ffffff;
+  --card-2:#f4f6fa;
+  --ink:#1b2330;
+  --ink-soft:#3a4252;
+  --muted:#7c8595;
+  --faint:#a7afbd;
+  --line:#e7eaf0;
+
+  /* brand */
+  --blue:#3266f0;
+  --blue-soft:#e9effe;
+  --up:#2bb37a;          /* candle hijau */
+  --up-soft:#e3f5ec;
+  --down:#e0584f;        /* candle merah */
+  --down-soft:#fdebe9;
+  --yellow:#f3c24b;
+  --purple:#7b61ff;
+
+  /* type scale */
+  --t-hero:clamp(48px,7vw,76px);
+  --shadow:0 24px 60px rgba(40,55,80,.10);
+  --shadow-sm:0 10px 30px rgba(40,55,80,.06);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono","Menlo","Consolas",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;background:var(--page);
+  color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1;
+  padding:22px;
+}
+svg{display:block}
+button{font:inherit;cursor:pointer}
+.tnum{font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)}
+
+.app{
+  max-width:1180px;margin:0 auto;background:var(--app);
+  border-radius:26px;box-shadow:var(--shadow);overflow:hidden;
+}
+
+/* ───────── TOPBAR ───────── */
+.topbar{display:flex;align-items:center;gap:16px;padding:18px 26px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:750;font-size:16px;letter-spacing:-.01em}
+.brand .mark{width:22px;height:22px;display:grid;place-items:center;color:var(--ink)}
+.brand .mark svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.6;fill:none}
+.navpill{
+  margin:0 auto;display:flex;align-items:center;gap:4px;
+  background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;box-shadow:var(--shadow-sm)
+}
+.navpill a{text-decoration:none;color:var(--muted);font-weight:650;padding:8px 16px;border-radius:999px}
+.navpill a.on{background:var(--ink);color:#fff}
+.navpill .mkt{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-weight:650;padding:8px 14px;border-left:1px solid var(--line);margin-left:4px}
+.navpill .mkt svg{width:15px;height:15px;stroke:var(--muted);stroke-width:1.7;fill:none}
+.navpill .mkt b{font-weight:750}
+.t-actions{display:flex;align-items:center;gap:12px}
+.bell{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);box-shadow:var(--shadow-sm)}
+.bell svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.7;fill:none}
+.me{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ff8a5b,#ff5d73);display:grid;place-items:center;color:#fff;font:700 13px var(--mono);box-shadow:var(--shadow-sm)}
+
+/* ───────── HERO ───────── */
+.hero{padding:6px 26px 16px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:20px;align-items:start}
+.crumb{display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.crumb .back{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.crumb .back svg{width:16px;height:16px;stroke:var(--ink);stroke-width:1.9;fill:none}
+.crumb b{color:var(--ink)}
+
+h1.hero-title{font-size:var(--t-hero);font-weight:350;letter-spacing:-.04em;line-height:.96;color:var(--ink)}
+
+.subports{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap}
+.subport{min-width:230px}
+.subport .lab{color:var(--muted);font-size:13px;margin-bottom:8px}
+.subport .lab b{color:var(--ink);font-weight:700;margin-left:6px}
+.blob{height:46px;border-radius:999px;background:var(--card-2);position:relative;overflow:hidden;display:flex;align-items:center}
+.blob i{height:34px;border-radius:999px;margin-left:auto;margin-right:6px}
+.blob .b1{width:46%;background:repeating-linear-gradient(135deg,#f08a82,#e0584f 10px,#ec6d64 11px)}
+.blob .b2{width:26%;background:repeating-linear-gradient(135deg,#f7d273,#f3c24b 10px,#f5ca5d 11px)}
+.blob .b3{width:30%;background:repeating-linear-gradient(135deg,#5b8cff,#3266f0 10px,#477bf5 11px)}
+
+/* arc gauge */
+.gauge{position:relative;height:230px}
+.gauge svg{width:100%;height:100%}
+.gauge .center{position:absolute;left:0;right:0;bottom:18px;text-align:center}
+.gauge .center .lab{color:var(--muted);font-size:13px}
+.gauge .center .big{font-size:40px;font-weight:700;letter-spacing:-.035em;margin-top:6px}
+.gauge .center .view{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;box-shadow:var(--shadow-sm)}
+.gauge .center .view svg{width:14px;height:14px;stroke:var(--ink);stroke-width:1.9;fill:none;display:inline}
+
+/* ticker (kanan atas hero) */
+.ticker{position:absolute;top:0;right:26px;display:flex;gap:26px}
+.tk .name{color:var(--muted);font-size:12px;margin-bottom:5px}
+.tk .row{display:flex;align-items:center;gap:8px}
+.tk .px{font-weight:750;font-size:15px;letter-spacing:-.01em}
+.tk .chip{font:700 11px var(--mono);padding:2px 7px;border-radius:999px}
+.tk .chip.p{background:var(--up-soft);color:var(--up)}
+.tk .chip.n{background:var(--down-soft);color:var(--down)}
+
+/* ───────── BODY GRID ───────── */
+.body{background:var(--card);border-top-left-radius:26px;border-top-right-radius:26px;margin-top:6px;padding:22px 26px 28px}
+.row1{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,1fr);gap:18px}
+.panel{background:var(--card-2);border:1px solid var(--line);border-radius:20px;padding:18px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-head .h{display:flex;align-items:center;gap:9px;font-weight:750;font-size:15px}
+.panel-head .h svg{width:17px;height:17px;stroke:var(--ink);stroke-width:1.8;fill:none}
+.round{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.round svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.9;fill:none}
+.head-actions{display:flex;gap:8px}
+
+/* chart */
+.graph-flex{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px}
+.chart-box{position:relative}
+#candles{width:100%;height:250px}
+.tooltip{
+  position:absolute;transform:translate(-50%,-115%);
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:8px 12px;box-shadow:var(--shadow);text-align:center;pointer-events:none;white-space:nowrap;
+}
+.tooltip .d{color:var(--muted);font-size:11px}
+.tooltip .v{font-weight:750;font-size:16px;letter-spacing:-.02em;margin-top:1px}
+.tooltip:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:11px;height:11px;background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--line);rotate:45deg}
+.x-axis{display:flex;justify-content:space-between;margin-top:6px;color:var(--faint);font-size:12px}
+
+.metrics{display:flex;flex-direction:column;gap:18px;padding-top:4px;border-left:1px solid var(--line);padding-left:16px}
+.metric .lab{color:var(--muted);font-size:13px}
+.metric .num{font-size:26px;font-weight:750;letter-spacing:-.03em;margin-top:2px}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px;flex-wrap:wrap}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:700;padding:7px 14px;border-radius:9px;font-size:13px}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.icons button{padding:7px 11px}
+.seg.icons svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none}
+
+/* AI assistant */
+.ai .bubble-me{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:14px 14px 4px 14px;padding:9px 13px;font-weight:600;width:max-content;max-width:80%}
+.ai .bot{display:flex;gap:10px;margin-top:14px}
+.ai .bot .spark{width:26px;height:26px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto}
+.ai .bot .spark svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.9;fill:none}
+.ai .bot .txt b{font-weight:750}
+.ai .bot .txt ul{margin:6px 0 0 16px;color:var(--ink-soft)}
+.ai .bot .txt li{margin-top:3px}
+.ai .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
+.ai .tabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:650;padding:7px 13px;border-radius:999px;font-size:12px}
+.ai .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ai .input{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 8px}
+.ai .input .plus{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--card-2)}
+.ai .input input{flex:1;border:0;background:transparent;outline:none;font:inherit;color:var(--ink)}
+.ai .input .mic{color:var(--muted)}
+.ai .input .mic svg,.ai .input .plus svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.8;fill:none}
+.ai .input .send{width:38px;height:38px;border-radius:50%;background:var(--blue);display:grid;place-items:center;color:#fff;border:0}
+.ai .input .send svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.9;fill:none}
+
+/* row 2 */
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border-bottom:0}
+.tx .ic{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.tx .ic svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none}
+.tx .info b{display:block;font-weight:700}
+.tx .info span{color:var(--muted);font-size:12px}
+.tx .amt{margin-left:auto;text-align:right}
+.tx .amt b{font-weight:750}
+.tx .amt span{display:block;color:var(--faint);font-size:11px}
+
+.spend .big{font-size:30px;font-weight:750;letter-spacing:-.03em}
+.spend .delta{float:right;text-align:right;color:var(--down);font-weight:700}
+.spend .delta span{display:block;color:var(--faint);font-weight:600;font-size:11px}
+.spend .bar{display:flex;gap:5px;margin-top:16px;height:12px}
+.spend .bar i{border-radius:6px}
+.spend .legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-weight:600}
+.spend .legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+@media(max-width:1000px){
+  .hero{grid-template-columns:1fr}
+  .ticker{position:static;margin-top:14px;flex-wrap:wrap}
+  .row1,.row2,.graph-flex{grid-template-columns:1fr}
+  .metrics{flex-direction:row;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:14px;flex-wrap:wrap;gap:24px}
+  .navpill{order:3;margin:0;width:100%;justify-content:center;flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- topbar -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></span>TOMOE 2.0</div>
+    <nav class="navpill">
+      <a class="on">Dashboard</a>
+      <a>Analitik</a>
+      <a>Forecast</a>
+      <span class="mkt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Komoditas: <b>Cabai Rawit</b></span>
+    </nav>
+    <div class="t-actions">
+      <button class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9z"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+      <div class="me">RR</div>
+    </div>
+  </header>
+
+  <!-- hero -->
+  <section class="hero">
+    <div style="position:relative">
+      <div class="crumb">
+        <span class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>
+        Dashboard/<b>Inflasi Nasional</b>
+      </div>
+      <h1 class="hero-title">Inflasi Nasional</h1>
+
+      <div class="subports">
+        <div class="subport">
+          <div class="lab">Volatile Food <b class="down">/6,12%</b></div>
+          <div class="blob"><i class="b1"></i></div>
+        </div>
+        <div class="subport">
+          <div class="lab">Core &amp; Administered <b>/2,31% · 1,07%</b></div>
+          <div class="blob"><i class="b2"></i><i class="b3"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- arc gauge -->
+    <div style="position:relative">
+      <div class="ticker">
+        <div class="tk">
+          <div class="name">Cabai Rawit</div>
+          <div class="row"><span class="px tnum">64.200</span><span class="chip p">+8%</span></div>
+        </div>
+        <div class="tk">
+          <div class="name">Bawang Merah</div>
+          <div class="row"><span class="px tnum">38.900</span><span class="chip p">+8%</span></div>
+        </div>
+        <div class="tk">
+          <div class="name">Beras</div>
+          <div class="row"><span class="px tnum">13.850</span><span class="chip n">−8%</span></div>
+        </div>
+      </div>
+
+      <div class="gauge" style="margin-top:78px">
+        <svg viewBox="0 0 420 230" preserveAspectRatio="xMidYMax meet">
+          <defs>
+            <linearGradient id="arcFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#bcd3ff" stop-opacity=".55"/>
+              <stop offset="1" stop-color="#bcd3ff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M30 210 A180 180 0 0 1 390 210 L390 210 L30 210 Z" fill="url(#arcFill)"/>
+          <path d="M30 210 A180 180 0 0 1 390 210" fill="none" stroke="#9cc0ff" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
+          <circle cx="30" cy="210" r="7" fill="#3266f0"/>
+          <circle cx="210" cy="30" r="7" fill="#3266f0"/>
+          <circle cx="332" cy="64" r="6" fill="#3266f0"/>
+          <circle cx="390" cy="210" r="7" fill="#9cc0ff"/>
+        </svg>
+        <div class="center">
+          <div class="lab">Inflasi Umum — YoY</div>
+          <div class="big tnum">2,84<span style="font-size:.5em;color:var(--muted)">%</span></div>
+          <a class="view">View <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- body -->
+  <div class="body">
+    <div class="row1">
+      <!-- graph -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="h"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="13" y="7" width="3" height="10"/></svg>Grafik harga</div>
+          <div class="head-actions">
+            <span class="round"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+            <span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </div>
+        </div>
+
+        <div class="graph-flex">
+          <div>
+            <div class="chart-box">
+              <svg id="candles" viewBox="0 0 640 250" preserveAspectRatio="none" aria-label="Candlestick harga komoditas"></svg>
+              <div class="tooltip" id="tip"><div class="d">12 Mei 2026</div><div class="v tnum">Rp 64.200</div></div>
+            </div>
+            <div class="x-axis" id="xAxis"></div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><div class="lab">Akurasi forecast (MAPE)</div><div class="num tnum">8,14%</div></div>
+            <div class="metric"><div class="lab">Lead time sinyal</div><div class="num tnum">5 hari</div></div>
+            <div class="metric"><div class="lab">Cakupan</div><div class="num tnum">34 prov</div></div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="seg icons">
+            <button><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 8-9"/></svg></button>
+            <button class="on"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="3" height="9"/><path d="M6.5 5v3M6.5 17v2"/><rect x="14" y="6" width="3" height="11"/><path d="M15.5 4v2M15.5 17v3"/></svg></button>
+          </div>
+          <div class="seg">
+            <button>Tahun</button>
+            <button class="on">Bulan</button>
+            <button>Minggu</button>
+            <button>Hari</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI -->
+      <div class="panel ai">
+        <div class="panel-head">
+          <div class="h"><svg viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4M4 19h4"/><path d="M13 4l2.5 6.5L22 13l-6.5 2.5L13 22l-2.5-6.5L4 13l6.5-2.5z"/></svg>AI Assistant</div>
+          <span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+
+        <div class="bubble-me">Wilayah mana yang perlu difokuskan?</div>
+        <div class="bot">
+          <span class="spark"><svg viewBox="0 0 24 24"><path d="M13 4l2.5 6.5L22 13l-6.5 2.5L13 22l-2.5-6.5L4 13l6.5-2.5z"/></svg></span>
+          <div class="txt">
+            <b>⚡ Fokus pengawasan:</b>
+            <ul>
+              <li>Pantau: <b>Sulteng, Maluku</b> (hortikultura, lead 5h)</li>
+              <li>Aman: beras &amp; minyak goreng (stok memadai)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="on">IndoBERT</button>
+          <button>Document AI</button>
+          <button>Forecast</button>
+          <button>Analis Sinyal</button>
+        </div>
+
+        <div class="input">
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <input placeholder="Tulis perintah untuk AI Assistant">
+          <span class="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+          <button class="send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- row 2 -->
+    <div class="row2">
+      <div class="panel">
+        <div class="panel-head"><div class="h"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M13 9l3 3-3 3"/></svg>Sinyal terbaru</div><span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
+        <div class="tx">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10l7-7 7 7"/></svg></span>
+          <div class="info"><b>Lonjakan 2σ — Cabai Rawit</b><span>nasional · 2 jam lalu</span></div>
+          <div class="amt"><b class="down">+11,3%</b><span>HIGH</span></div>
+        </div>
+        <div class="tx">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10l7-7 7 7"/></svg></span>
+          <div class="info"><b>Forecast breach — Bawang Merah</b><span>CI 90% · 3 hari</span></div>
+          <div class="amt"><b class="down">+7,8%</b><span>HIGH</span></div>
+        </div>
+        <div class="tx">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-12 7L3 21l1.5-6A8 8 0 1 1 21 12z"/></svg></span>
+          <div class="info"><b>Sentiment spike — Minyak Goreng</b><span>dok negatif +180% · 48 jam</span></div>
+          <div class="amt"><b class="up" style="color:var(--yellow)">WATCH</b><span>medium</span></div>
+        </div>
+      </div>
+
+      <div class="panel spend">
+        <div class="panel-head"><div class="h"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Penyumbang inflasi</div><span class="round"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
+        <div>
+          <span class="delta">+0,12 pp<span>vs bulan lalu</span></span>
+          <div class="big tnum">2,84%</div>
+        </div>
+        <div class="bar">
+          <i style="width:46%;background:var(--blue)"></i>
+          <i style="width:22%;background:var(--yellow)"></i>
+          <i style="width:18%;background:var(--purple)"></i>
+          <i style="width:14%;background:#c2c9d6"></i>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--blue)"></i>Hortikultura 46%</span>
+          <span><i style="background:var(--yellow)"></i>Pangan pokok 22%</span>
+          <span><i style="background:var(--purple)"></i>Energi 18%</span>
+          <span><i style="background:#c2c9d6"></i>Lainnya 14%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function drawCandles(){
+  const months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul"];
+  // 28 candle OHLC — fokus desain: wick tipis, body membulat, hijau naik / merah turun
+  const seed=[3,1,-1,2,4,-2,1,3,-1,-3,2,5,4,-2,1,-1,3,2,-4,1,3,-2,2,4,1,-1,3,2];
+  let p=50; const data=seed.map((d,i)=>{
+    const open=p, close=Math.max(40,open+d), high=Math.max(open,close)+1.4+Math.abs(d)*.3,
+          low=Math.min(open,close)-1.4-Math.abs(d)*.3; p=close;
+    return {open,high,low,close};
+  });
+
+  const W=640,H=250,padT=16,padB=14,padL=8,padR=8;
+  const all=data.flatMap(d=>[d.high,d.low]);
+  const max=Math.max(...all)+1.5,min=Math.min(...all)-1.5;
+  const n=data.length, slot=(W-padL-padR)/n, cw=slot*0.5;
+  const y=v=>padT+(max-v)/(max-min)*(H-padT-padB);
+
+  let s="";
+  // grid dashed
+  for(let g=0;g<=4;g++){const yy=padT+g/4*(H-padT-padB);
+    s+=`<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W-padR}" y2="${yy.toFixed(1)}" stroke="#dfe4ee" stroke-dasharray="4 6"/>`;}
+  for(let v=0;v<=6;v++){const xx=padL+v/6*(W-padL-padR);
+    s+=`<line x1="${xx.toFixed(1)}" y1="${padT}" x2="${xx.toFixed(1)}" y2="${H-padB}" stroke="#e7ebf2" stroke-dasharray="4 6"/>`;}
+
+  const hi=18; // candle yang di-highlight (tooltip)
+  data.forEach((d,i)=>{
+    const cx=padL+slot*i+slot/2, up=d.close>=d.open, col=up?"var(--up)":"var(--down)";
+    const yo=y(d.open),yc=y(d.close),top=Math.min(yo,yc),bh=Math.max(2.5,Math.abs(yc-yo));
+    s+=`<line x1="${cx.toFixed(1)}" y1="${y(d.high).toFixed(1)}" x2="${cx.toFixed(1)}" y2="${y(d.low).toFixed(1)}" stroke="${col}" stroke-width="1.4"/>`;
+    s+=`<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${bh.toFixed(1)}" rx="2.5" fill="${col}"/>`;
+    if(i===hi){
+      s+=`<circle cx="${cx.toFixed(1)}" cy="${y(d.high).toFixed(1)}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="2"/>`;
+      // posisikan tooltip (persen terhadap box)
+      const tip=document.getElementById("tip");
+      tip.style.left=((cx/W)*100)+"%";
+      tip.style.top=((y(d.high)/H)*100)+"%";
+    }
+  });
+  document.getElementById("candles").innerHTML=s;
+
+  // Y-axis tidak dipakai numeric agar bersih; X-axis bulan:
+  document.getElementById("xAxis").innerHTML=months.map(m=>`<span>${m}</span>`).join("");
+})();
+</script>
+</body>
+</html>

@@ -24,7 +24,7 @@ export function severityColor(severity: string): string {
 }
 
 export function sentimentColor(sentiment: string): string {
-  if (sentiment === 'negatif') return '#ef4444'
-  if (sentiment === 'netral') return '#f59e0b'
-  return '#22a05a'
+  if (sentiment === 'negatif') return '#e0584f'
+  if (sentiment === 'netral') return '#f3c24b'
+  return '#2bb37a'
 }

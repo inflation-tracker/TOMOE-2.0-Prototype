@@ -55,6 +55,64 @@ def detect_2sigma_breach(
     return None
 
 
+def detect_robust_breach(
+    series: pd.Series,
+    current_value: float,
+    window: int = 30,
+    n_sigma: float = 2.0,
+    use_log: bool = True,
+) -> Optional[dict]:
+    """Robust alternative to the 2σ rule.
+
+    Commodity prices are right-skewed and spiky, so the mean/std used by
+    `detect_2sigma_breach` is easily dragged around by a single outlier and
+    fires false positives. This uses the **median** and **MAD** (median
+    absolute deviation, scaled by 1.4826 to approximate σ for normal data),
+    which are robust to outliers, and optionally works in log-space so the
+    band is multiplicative (appropriate for prices).
+    """
+    if len(series) < window:
+        return None
+
+    win = series.iloc[-window:]
+    in_log = use_log and bool((win > 0).all()) and current_value > 0
+    data = np.log(win.values) if in_log else win.values
+    cv = np.log(current_value) if in_log else current_value
+
+    med = float(np.median(data))
+    mad = float(np.median(np.abs(data - med)) * 1.4826)
+    if mad == 0:
+        return None
+
+    upper, lower = med + n_sigma * mad, med - n_sigma * mad
+    # Convert thresholds back to price space for the response.
+    to_price = (lambda x: float(np.exp(x))) if in_log else float
+
+    if cv > upper:
+        return {
+            "alert_type": "robust_mad",
+            "direction": "above",
+            "actual_value": current_value,
+            "threshold": to_price(upper),
+            "median": to_price(med),
+            "mad": mad,
+            "log_space": in_log,
+            "severity": "high" if cv > med + 3 * mad else "medium",
+        }
+    if cv < lower:
+        return {
+            "alert_type": "robust_mad",
+            "direction": "below",
+            "actual_value": current_value,
+            "threshold": to_price(lower),
+            "median": to_price(med),
+            "mad": mad,
+            "log_space": in_log,
+            "severity": "medium",
+        }
+    return None
+
+
 def detect_forecast_breach(
     actual: float,
     upper_bound: float,

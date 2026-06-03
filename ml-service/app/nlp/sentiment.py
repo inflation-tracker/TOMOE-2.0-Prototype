@@ -2,24 +2,34 @@
 import logging
 from functools import lru_cache
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
-LABEL_MAP = {"LABEL_0": "negatif", "LABEL_1": "netral", "LABEL_2": "positif"}
+# Label mapping for mdhugol/indonesia-bert-sentiment-classification, a model
+# fine-tuned for sentiment: LABEL_0=positive, LABEL_1=neutral, LABEL_2=negative.
+LABEL_MAP = {"LABEL_0": "positif", "LABEL_1": "netral", "LABEL_2": "negatif"}
 
 
 @lru_cache(maxsize=1)
 def load_sentiment_pipeline():
-    """Load IndoBERT sentiment pipeline (cached after first call)."""
-    from transformers import pipeline
-    logger.info("Loading IndoBERT sentiment model...")
+    """Load the IndoBERT sentiment pipeline (cached after first call)."""
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+    model_name = settings.indobert_model
+    revision = settings.sentiment_model_revision
+    logger.info("Loading sentiment model %s @ %s ...", model_name, revision)
+    # Pin the revision so an upstream change to the model can't silently alter
+    # production outputs.
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, revision=revision)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision)
     pipe = pipeline(
         "text-classification",
-        model="indobenchmark/indobert-base-p2",
-        tokenizer="indobenchmark/indobert-base-p2",
+        model=model,
+        tokenizer=tokenizer,
         truncation=True,
         max_length=512,
     )
-    logger.info("IndoBERT model loaded.")
+    logger.info("Sentiment model loaded.")
     return pipe
 
 

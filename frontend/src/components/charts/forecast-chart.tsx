@@ -51,10 +51,10 @@ export function ForecastChart({ data, valueFormatter }: ForecastChartProps) {
           wrapperStyle={{ fontSize: 10, fontFamily: 'Plus Jakarta Sans', paddingTop: 8 }}
           formatter={(v: string) => ({ Aktual: 'Aktual', Forecast: 'Forecast', 'CI Hi': '', 'CI Lo': '' } as Record<string, string>)[v] ?? v}
         />
-        <Area dataKey="ci_high" name="CI Hi" fill="rgba(239,68,68,0.08)" stroke="transparent" connectNulls={false} />
-        <Area dataKey="ci_low" name="CI Lo" fill="rgba(239,68,68,0.08)" stroke="transparent" connectNulls={false} />
-        <Line dataKey="actual" name="Aktual" stroke="#22a05a" strokeWidth={2.5} dot={{ r: 2.5 }} connectNulls={false} />
-        <Line dataKey="forecast" name="Forecast" stroke="#ef4444" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 2.5 }} connectNulls={false} />
+        <Area dataKey="ci_high" name="CI Hi" fill="rgba(224,88,79,0.08)" stroke="transparent" connectNulls={false} />
+        <Area dataKey="ci_low" name="CI Lo" fill="rgba(224,88,79,0.08)" stroke="transparent" connectNulls={false} />
+        <Line dataKey="actual" name="Aktual" stroke="#2bb37a" strokeWidth={2.5} dot={{ r: 2.5 }} connectNulls={false} />
+        <Line dataKey="forecast" name="Forecast" stroke="#e0584f" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 2.5 }} connectNulls={false} />
       </ComposedChart>
       )}
     </ChartFrame>

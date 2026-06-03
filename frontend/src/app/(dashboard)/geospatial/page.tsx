@@ -1,8 +1,11 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { provinsiNasional } from '@/lib/mock-data'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { Loading } from '@/components/ui/loading'
 import { Badge } from '@/components/ui/badge'
+import type { Provinsi } from '@/types'
 import { AlertTriangle, MapPin } from 'lucide-react'
 
 // Leaflet must be dynamically imported (no SSR)
@@ -10,8 +13,6 @@ const IndonesiaMap = dynamic(
   () => import('@/components/charts/indonesia-map').then(m => m.IndonesiaMap),
   { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-xl text-xs text-gray-400">Memuat peta…</div> }
 )
-
-type Province = typeof provinsiNasional[number]
 
 function riskBadge(risk: number) {
   if (risk >= 80) return <Badge variant="red">Tinggi</Badge>
@@ -28,16 +29,19 @@ function riskDot(risk: number) {
 }
 
 export default function GeospatialPage() {
-  const [selected, setSelected] = useState<Province | null>(null)
+  const [selected, setSelected] = useState<Provinsi | null>(null)
   const [sortBy, setSortBy]     = useState<'risk' | 'yoy' | 'mtm'>('risk')
 
-  const sorted = [...provinsiNasional].sort((a, b) => b[sortBy] - a[sortBy])
+  const { data: provinsi } = useQuery({ queryKey: ['geospatial', 'provinces'], queryFn: () => api.geospatial.provinces() })
+  if (!provinsi) return <Loading label="Memuat peta risiko…" />
+
+  const sorted = [...provinsi].sort((a, b) => b[sortBy] - a[sortBy])
   const top5   = sorted.slice(0, 5)
 
-  const high   = provinsiNasional.filter(p => p.risk >= 80).length
-  const medium = provinsiNasional.filter(p => p.risk >= 50 && p.risk < 80).length
-  const low    = provinsiNasional.filter(p => p.risk < 50).length
-  const avgYoY = (provinsiNasional.reduce((s, p) => s + p.yoy, 0) / provinsiNasional.length).toFixed(2)
+  const high   = provinsi.filter(p => p.risk >= 80).length
+  const medium = provinsi.filter(p => p.risk >= 50 && p.risk < 80).length
+  const low    = provinsi.filter(p => p.risk < 50).length
+  const avgYoY = (provinsi.reduce((s, p) => s + p.yoy, 0) / provinsi.length).toFixed(2)
 
   return (
     <div className="flex flex-col gap-5 h-full">
@@ -78,7 +82,7 @@ export default function GeospatialPage() {
         {/* Map */}
         <div className="flex-1 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden" style={{ minHeight: 420 }}>
           <IndonesiaMap
-            data={provinsiNasional}
+            data={provinsi}
             onSelect={setSelected}
             selected={selected?.code ?? null}
           />

@@ -1,7 +1,8 @@
 import 'server-only'
 import { getPool } from './db'
-import { mockCommodityPrices, mockEWSAlerts } from './mock-data'
-import type { CommodityPrice, EWSAlert } from '@/types'
+import { mockCommodityPrices, mockEWSAlerts, mockDashboardSummary } from './mock-data'
+import { commodityPriceListSchema, ewsAlertListSchema } from './schemas'
+import type { CommodityPrice, EWSAlert, DashboardSummary } from '@/types'
 
 // pg returns DECIMAL/NUMERIC as strings — coerce safely.
 const num = (v: unknown): number => (v == null ? 0 : Number(v))
@@ -15,6 +16,10 @@ export async function getCommodityPrices(): Promise<CommodityPrice[]> {
   const pool = getPool()
   if (!pool) return mockCommodityPrices
   try {
+    // Bound the scan to the recent window so this stays fast as the hypertable
+    // grows (without a time filter, DISTINCT ON scans all history). The
+    // market_id tie-break makes "latest price per commodity" deterministic
+    // instead of picking an arbitrary market on equal timestamps.
     const { rows } = await pool.query(`
       SELECT DISTINCT ON (cp.commodity_id)
         cp.time, cp.commodity_id,
@@ -26,16 +31,17 @@ export async function getCommodityPrices(): Promise<CommodityPrice[]> {
       JOIN commodities c ON c.id = cp.commodity_id
       LEFT JOIN markets m ON m.id = cp.market_id
       LEFT JOIN regions r ON r.id = m.region_id
-      ORDER BY cp.commodity_id, cp.time DESC
+      WHERE cp.time > now() - INTERVAL '90 days'
+      ORDER BY cp.commodity_id, cp.time DESC, cp.market_id
     `)
     if (rows.length === 0) return mockCommodityPrices
-    return rows.map((r): CommodityPrice => {
+    const mapped = rows.map((r): CommodityPrice => {
       const price = num(r.price)
       const change = num(r.price_change)
       const prev = price - change
       return {
         time: new Date(r.time).toISOString().slice(0, 10),
-        commodity_id: r.commodity_id,
+        commodity_id: Number(r.commodity_id),
         commodity_name: r.commodity_name,
         category: r.category,
         market_name: r.market_name,
@@ -46,6 +52,13 @@ export async function getCommodityPrices(): Promise<CommodityPrice[]> {
         price_change_pct: prev > 0 ? Number(((change / prev) * 100).toFixed(2)) : 0,
       }
     })
+    // Validate the shape at the trust boundary; fall back to mock on drift.
+    const parsed = commodityPriceListSchema.safeParse(mapped)
+    if (!parsed.success) {
+      console.error('[queries] getCommodityPrices shape drift:', parsed.error.issues)
+      return mockCommodityPrices
+    }
+    return parsed.data
   } catch (err) {
     console.error('[queries] getCommodityPrices fell back to mock:', err)
     return mockCommodityPrices
@@ -67,7 +80,7 @@ export async function getEWSAlerts(): Promise<EWSAlert[]> {
       ORDER BY e.triggered_at DESC
     `)
     if (rows.length === 0) return mockEWSAlerts
-    return rows.map((r): EWSAlert => ({
+    const mapped = rows.map((r): EWSAlert => ({
       id: Number(r.id),
       triggered_at: new Date(r.triggered_at).toISOString(),
       region_name: r.region_name,
@@ -76,11 +89,37 @@ export async function getEWSAlerts(): Promise<EWSAlert[]> {
       severity: r.severity,
       actual_value: num(r.actual_value),
       threshold: num(r.threshold),
-      message: r.message,
+      message: r.message ?? '',
       status: r.status,
     }))
+    const parsed = ewsAlertListSchema.safeParse(mapped)
+    if (!parsed.success) {
+      console.error('[queries] getEWSAlerts shape drift:', parsed.error.issues)
+      return mockEWSAlerts
+    }
+    return parsed.data
   } catch (err) {
     console.error('[queries] getEWSAlerts fell back to mock:', err)
     return mockEWSAlerts
+  }
+}
+
+/**
+ * Dashboard summary. The headline scalars (inflation, sentiment) stay on the
+ * mock baseline until their BPS/IndoBERT queries land, but the alert and
+ * commodity counters are DERIVED from the same live sources the rest of the UI
+ * uses — so the KPI cards never drift from the Early-Warning list / commodity
+ * table. Single source of truth for both the page and /api/dashboard.
+ */
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const [alerts, prices] = await Promise.all([getEWSAlerts(), getCommodityPrices()])
+  const open = alerts.filter((a) => a.status === 'open')
+  const high = open.filter((a) => a.severity === 'high')
+  return {
+    ...mockDashboardSummary,
+    active_alerts: open.length,
+    high_alerts: high.length,
+    commodities_monitored: prices.length,
+    last_updated: new Date().toISOString(),
   }
 }

@@ -4,18 +4,24 @@
 //   * PBKDF2 password verification
 // No `server-only` import here — middleware (Edge) needs verifySession.
 
+import { z } from 'zod'
+
 const enc = new TextEncoder()
 
 export const SESSION_COOKIE = 'tomoe_session'
 const SESSION_TTL_SECONDS = 8 * 60 * 60
 
-export interface SessionPayload {
-  sub: number
-  email: string
-  role: 'admin' | 'analyst' | 'tpid' | 'viewer'
-  iat?: number
-  exp?: number
-}
+// A decoded JWT payload is untrusted input even after the signature verifies
+// (it could be malformed or from an older token schema), so we validate its
+// shape with zod instead of asserting it with `as`.
+const sessionPayloadSchema = z.object({
+  sub: z.number(),
+  email: z.string(),
+  role: z.enum(['admin', 'analyst', 'tpid', 'viewer']),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+})
+export type SessionPayload = z.infer<typeof sessionPayloadSchema>
 
 function getSecret(): string {
   return process.env.AUTH_SECRET ?? 'dev-insecure-secret-change-me'
@@ -29,7 +35,7 @@ function bytesToB64url(bytes: Uint8Array): string {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-function b64urlToBytes(str: string): Uint8Array {
+function b64urlToBytes(str: string): Uint8Array<ArrayBuffer> {
   let s = str.replace(/-/g, '+').replace(/_/g, '/')
   s += '='.repeat((4 - (s.length % 4)) % 4)
   const bin = atob(s)
@@ -38,7 +44,7 @@ function b64urlToBytes(str: string): Uint8Array {
   return out
 }
 
-function b64ToBytes(str: string): Uint8Array {
+function b64ToBytes(str: string): Uint8Array<ArrayBuffer> {
   const bin = atob(str)
   const out = new Uint8Array(bin.length)
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
@@ -74,9 +80,12 @@ export async function verifySession(token: string | undefined | null): Promise<S
     const [header, claims, sig] = token.split('.')
     if (!header || !claims || !sig) return null
     const data = `${header}.${claims}`
-    const ok = await crypto.subtle.verify('HMAC', await hmacKey(), b64urlToBytes(sig) as BufferSource, enc.encode(data))
+    const ok = await crypto.subtle.verify('HMAC', await hmacKey(), b64urlToBytes(sig), enc.encode(data))
     if (!ok) return null
-    const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(claims))) as SessionPayload
+    const raw: unknown = JSON.parse(new TextDecoder().decode(b64urlToBytes(claims)))
+    const parsed = sessionPayloadSchema.safeParse(raw)
+    if (!parsed.success) return null
+    const payload = parsed.data
     if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) return null
     return payload
   } catch {
@@ -96,7 +105,7 @@ export async function verifyPassword(password: string, stored: string): Promise<
     const expected = b64ToBytes(keyB64)
     const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits'])
     const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt: salt as BufferSource, iterations, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
       keyMaterial,
       expected.length * 8,
     )

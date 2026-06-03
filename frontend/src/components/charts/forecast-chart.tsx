@@ -5,6 +5,15 @@ import {
 } from 'recharts'
 import { ChartFrame } from './chart-frame'
 
+// Legend display labels (CI series are hidden). Typed const instead of an
+// `as Record<...>` cast on an inline object literal.
+const LEGEND_LABELS: Record<string, string> = {
+  Aktual: 'Aktual',
+  Forecast: 'Forecast',
+  'CI Hi': '',
+  'CI Lo': '',
+}
+
 interface ForecastChartProps {
   data: { date: string; actual: number | null; forecast: number | null; ci_high: number | null; ci_low: number | null }[]
   valueFormatter?: (v: number) => string
@@ -49,7 +58,7 @@ export function ForecastChart({ data, valueFormatter }: ForecastChartProps) {
         <Tooltip content={<CustomTooltip formatter={fmt} />} />
         <Legend
           wrapperStyle={{ fontSize: 10, fontFamily: 'Plus Jakarta Sans', paddingTop: 8 }}
-          formatter={(v: string) => ({ Aktual: 'Aktual', Forecast: 'Forecast', 'CI Hi': '', 'CI Lo': '' } as Record<string, string>)[v] ?? v}
+          formatter={(v: string) => LEGEND_LABELS[v] ?? v}
         />
         <Area dataKey="ci_high" name="CI Hi" fill="rgba(224,88,79,0.08)" stroke="transparent" connectNulls={false} />
         <Area dataKey="ci_low" name="CI Lo" fill="rgba(224,88,79,0.08)" stroke="transparent" connectNulls={false} />

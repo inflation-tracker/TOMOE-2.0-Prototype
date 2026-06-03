@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# TOMOE 2.0 pre-commit — first line of defence for the project's standards.
+# Fast checks only; the full suite runs on pre-push and in CI.
+
+# ── Frontend: typecheck + lint (only when frontend TS/TSX is staged) ──────────
+if git diff --cached --name-only | grep -qE '^frontend/.*\.(ts|tsx)$'; then
+  echo "▶ Husky: frontend tsc + lint"
+  ( cd frontend && npx tsc --noEmit && npx next lint --max-warnings=0 ) || {
+    echo "✖ Frontend checks gagal — perbaiki dulu (ingat: no as-cast, pakai zod, dll)."
+    exit 1
+  }
+fi
+
+# ── Python: compile-check staged .py (deteksi syntax error, cepat) ────────────
+PYFILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.py$' || true)
+if [ -n "$PYFILES" ]; then
+  echo "▶ Husky: python py_compile"
+  python3 -m py_compile $PYFILES || { echo "✖ Python syntax error."; exit 1; }
+fi
+
+exit 0

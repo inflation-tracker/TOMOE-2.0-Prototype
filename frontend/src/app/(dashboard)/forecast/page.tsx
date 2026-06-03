@@ -12,6 +12,7 @@ import {
 import { Info, Calendar, Cpu } from 'lucide-react'
 
 type Metric = 'yoy' | 'mtm'
+const METRICS: Metric[] = ['yoy', 'mtm']
 
 const MODEL_COLORS = { SARIMA: '#6366f1', LSTM: '#f3c24b', Ensemble: '#e0584f' }
 
@@ -119,7 +120,7 @@ export default function ForecastPage() {
           <div className="flex items-center gap-2 flex-wrap">
             {/* YoY/MtM toggle */}
             <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-              {(['yoy', 'mtm'] as Metric[]).map(m => (
+              {METRICS.map(m => (
                 <button key={m} onClick={() => setMetric(m)}
                   className={`px-3 py-1.5 text-xs font-semibold transition-colors ${metric === m ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
                   {m.toUpperCase()}

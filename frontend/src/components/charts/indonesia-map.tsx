@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import type { Map as LeafletMap } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { provinsiNasional } from '@/lib/mock-data'
 
@@ -24,16 +25,18 @@ function riskToRadius(risk: number): number {
 
 export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
   const mapRef    = useRef<HTMLDivElement>(null)
-  const mapObjRef = useRef<unknown>(null)
+  // Typed as the Leaflet Map (type-only import → erased, no SSR import) so
+  // .remove() is callable without an `as any` cast.
+  const mapObjRef = useRef<LeafletMap | null>(null)
 
   useEffect(() => {
     if (!mapRef.current || mapObjRef.current) return
 
     // Dynamically import Leaflet to avoid SSR issues
     import('leaflet').then(L => {
-      // Fix default marker icon path issue with Next.js
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl
+      // Fix default marker icon path issue with Next.js. Reflect.deleteProperty
+      // removes Leaflet's internal `_getIconUrl` without an `as any` cast.
+      Reflect.deleteProperty(L.Icon.Default.prototype, '_getIconUrl')
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -104,8 +107,7 @@ export function IndonesiaMap({ data, onSelect }: IndonesiaMapProps) {
 
     return () => {
       if (mapObjRef.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(mapObjRef.current as any).remove()
+        mapObjRef.current.remove()
         mapObjRef.current = null
       }
     }

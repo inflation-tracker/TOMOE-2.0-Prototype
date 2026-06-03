@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# TOMOE 2.0 pre-push — run the test suites before code leaves the machine.
+# Best-effort on Python: skip gracefully if the ML deps aren't installed
+# locally (a frontend-only dev shouldn't be blocked; CI runs the full suite).
+
+run_pytest () {
+  dir=$1
+  if [ -f "$dir/pytest.ini" ]; then
+    echo "▶ Husky: pytest ($dir)"
+    ( cd "$dir" && python3 -m pytest -q ) || { echo "✖ Tests gagal di $dir"; exit 1; }
+  fi
+}
+
+if python3 -c 'import pytest, pandas' 2>/dev/null; then
+  run_pytest ml-service
+  run_pytest ingestion
+else
+  echo "⚠ Husky: pytest/pandas tidak tersedia — lewati test lokal (CI tetap menjalankan)."
+fi
+
+exit 0

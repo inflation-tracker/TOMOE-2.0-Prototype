@@ -1,0 +1,12 @@
+{
+  "name": "tomoe-2.0",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Repo-root tooling (Git hooks via Husky). App code lives in frontend/, ml-service/, ingestion/.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
